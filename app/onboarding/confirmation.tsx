@@ -5,6 +5,7 @@ import { useOnboarding } from './OnboardingContext';
 import { useIncome } from '../../hooks/useIncome';
 import { useUser } from '../../hooks/useUser';
 import { formatCurrency } from '../../utils/formatCurrency';
+import { formatRelativeDate } from '../../utils/formatDate';
 import { savePayments } from '../../utils/storage';
 import { Income } from '../../types/income';
 
@@ -36,14 +37,16 @@ export default function ConfirmationScreen() {
   const remaining = Math.max(0, onboardingIncome.amount - totalCommitted);
 
   const handleFinish = async () => {
-    const cycleDays = getCycleDays(onboardingIncome.frequency);
-    const nextPayday = new Date();
-    nextPayday.setDate(nextPayday.getDate() + cycleDays);
+    const nextPayday = onboardingIncome.nextPayday || (() => {
+      const d = new Date();
+      d.setDate(d.getDate() + getCycleDays(onboardingIncome.frequency));
+      return d.toISOString().split('T')[0];
+    })();
 
     const incomeData: Income = {
       amount: onboardingIncome.amount,
       frequency: onboardingIncome.frequency,
-      nextPayday: nextPayday.toISOString().split('T')[0],
+      nextPayday,
     };
 
     await saveIncome(incomeData);
@@ -80,6 +83,14 @@ export default function ConfirmationScreen() {
               {getFrequencyLabel(onboardingIncome.frequency)}
             </Text>
           </View>
+          {onboardingIncome.nextPayday ? (
+            <View style={styles.cardRow}>
+              <Text style={styles.cardLabel}>Next payday</Text>
+              <Text style={styles.cardValue}>
+                {formatRelativeDate(onboardingIncome.nextPayday)}
+              </Text>
+            </View>
+          ) : null}
           <View style={styles.cardSeparator} />
           <View style={styles.cardRow}>
             <Text style={styles.cardLabel}>Payments tracked</Text>

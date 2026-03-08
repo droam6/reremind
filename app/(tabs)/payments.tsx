@@ -32,9 +32,10 @@ function toMonthlyAmount(amount: number, freq: PayFrequency): number {
 }
 
 export default function PaymentsScreen() {
-  const { payments, loading, addPayment, removePayment, reload } = usePayments();
+  const { payments, loading, addPayment, removePayment, updatePayment, reload } = usePayments();
   const [showSheet, setShowSheet] = useState(false);
   const [showPremiumGate, setShowPremiumGate] = useState(false);
+  const [editingPayment, setEditingPayment] = useState<Payment | undefined>(undefined);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useFocusEffect(
@@ -53,16 +54,26 @@ export default function PaymentsScreen() {
       setShowPremiumGate(true);
       return;
     }
+    setEditingPayment(undefined);
+    setShowSheet(true);
+  };
+
+  const handleEditPayment = (payment: Payment) => {
+    setEditingPayment(payment);
     setShowSheet(true);
   };
 
   const handleSave = (data: Omit<Payment, 'id' | 'createdAt'>) => {
-    const payment: Payment = {
-      ...data,
-      id: generateId(),
-      createdAt: new Date().toISOString(),
-    };
-    addPayment(payment);
+    if (editingPayment) {
+      updatePayment({ ...editingPayment, ...data });
+    } else {
+      const payment: Payment = {
+        ...data,
+        id: generateId(),
+        createdAt: new Date().toISOString(),
+      };
+      addPayment(payment);
+    }
   };
 
   const handleDelete = (id: string) => {
@@ -105,7 +116,7 @@ export default function PaymentsScreen() {
       {hasPayments ? (
         <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
           {payments.map((p) => (
-            <View key={p.id} style={styles.card}>
+            <Pressable key={p.id} style={styles.card} onPress={() => handleEditPayment(p)}>
               <View style={styles.cardLeft}>
                 <Text style={styles.cardName}>{p.name}</Text>
                 <Text style={styles.cardDetail}>
@@ -142,7 +153,7 @@ export default function PaymentsScreen() {
                   </Pressable>
                 )}
               </View>
-            </View>
+            </Pressable>
           ))}
           <View style={styles.bottomPad} />
         </ScrollView>
@@ -167,8 +178,12 @@ export default function PaymentsScreen() {
 
       <AddPaymentSheet
         visible={showSheet}
-        onClose={() => setShowSheet(false)}
+        onClose={() => {
+          setShowSheet(false);
+          setEditingPayment(undefined);
+        }}
         onSave={handleSave}
+        initialPayment={editingPayment}
       />
 
       {showPremiumGate && (
