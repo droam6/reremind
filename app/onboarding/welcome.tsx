@@ -20,7 +20,7 @@ export default function WelcomeScreen() {
       <View style={styles.bottom}>
         <Pressable
           style={styles.button}
-          onPress={() => router.push('/onboarding/income')}
+          onPress={() => router.push('/onboarding/questions')}
         >
           <Text style={styles.buttonText}>GET STARTED</Text>
         </Pressable>

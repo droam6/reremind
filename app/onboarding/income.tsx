@@ -61,7 +61,7 @@ export default function IncomeScreen() {
     <View style={styles.container}>
       {/* Progress bar */}
       <View style={styles.progressTrack}>
-        <View style={[styles.progressFill, { width: '25%' }]} />
+        <View style={[styles.progressFill, { width: '40%' }]} />
       </View>
 
       {/* Back button */}

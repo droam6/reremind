@@ -39,7 +39,7 @@ export default function AddPaymentsScreen() {
     <View style={styles.container}>
       {/* Progress bar */}
       <View style={styles.progressTrack}>
-        <View style={[styles.progressFill, { width: '50%' }]} />
+        <View style={[styles.progressFill, { width: '60%' }]} />
       </View>
 
       {/* Back button */}

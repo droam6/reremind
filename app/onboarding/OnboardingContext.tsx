@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { IncomeFrequency } from '../../types/income';
 import { Payment, PayFrequency, PaymentCategory } from '../../types/payment';
 
@@ -27,6 +27,12 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     nextPayday: '',
   });
   const [payments, setPayments] = useState<Payment[]>([]);
+
+  // Reset state when onboarding layout mounts (handles reset flow)
+  useEffect(() => {
+    setIncome({ amount: 0, frequency: 'fortnightly', nextPayday: '' });
+    setPayments([]);
+  }, []);
 
   const setIncomeAmount = (amount: number) => {
     setIncome((prev) => ({ ...prev, amount }));
