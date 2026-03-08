@@ -151,3 +151,75 @@ export function calculateCycleData(income: Income, payments: Payment[]): CycleDa
     cycleProgress,
   };
 }
+
+export interface DayPaymentInfo {
+  date: string;
+  payments: Payment[];
+  total: number;
+}
+
+export function getDayPayments(payments: Payment[], dateStr: string): DayPaymentInfo {
+  const target = startOfDay(new Date(dateStr));
+  const matching: Payment[] = [];
+
+  for (const p of payments) {
+    const cycleDays = getCycleDays(p.frequency);
+    let current = startOfDay(new Date(p.nextDueDate));
+
+    // Walk backward past target
+    while (current > target) {
+      current = addDays(current, -cycleDays);
+    }
+    // Walk forward to find if it lands on target
+    while (current <= target) {
+      if (current.getTime() === target.getTime()) {
+        matching.push(p);
+        break;
+      }
+      current = addDays(current, cycleDays);
+    }
+  }
+
+  return {
+    date: dateStr,
+    payments: matching,
+    total: matching.reduce((sum, p) => sum + p.amount, 0),
+  };
+}
+
+export function getWeekPayments(payments: Payment[]): DayPaymentInfo[] {
+  const today = startOfDay(new Date());
+  const days: DayPaymentInfo[] = [];
+  for (let i = 0; i < 7; i++) {
+    const date = addDays(today, i);
+    const dateStr = date.toISOString().split('T')[0];
+    days.push(getDayPayments(payments, dateStr));
+  }
+  return days;
+}
+
+export function getWeekTotal(payments: Payment[]): number {
+  return getWeekPayments(payments).reduce((sum, d) => sum + d.total, 0);
+}
+
+export interface BusiestDayInfo {
+  date: string;
+  count: number;
+  total: number;
+}
+
+export function getBusiestDay(payments: Payment[], days: number = 7): BusiestDayInfo {
+  const today = startOfDay(new Date());
+  let busiest: BusiestDayInfo = { date: '', count: 0, total: 0 };
+
+  for (let i = 0; i < days; i++) {
+    const date = addDays(today, i);
+    const dateStr = date.toISOString().split('T')[0];
+    const info = getDayPayments(payments, dateStr);
+    if (info.payments.length > busiest.count) {
+      busiest = { date: dateStr, count: info.payments.length, total: info.total };
+    }
+  }
+
+  return busiest;
+}
