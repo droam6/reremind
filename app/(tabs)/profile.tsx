@@ -16,7 +16,6 @@ import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../
 import { IncomeFrequency } from '../../types/income';
 import { useIncome } from '../../hooks/useIncome';
 import { useCards } from '../../hooks/useCards';
-import { useUser } from '../../hooks/useUser';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatRelativeDate } from '../../utils/formatDate';
 import { generateId } from '../../utils/generateId';
@@ -59,7 +58,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { income, reload: reloadIncome, saveIncome } = useIncome();
   const { cards, addCard, removeCard } = useCards();
-  const { resetUser } = useUser();
+  // useUser no longer needed for reset — clearAll() handles everything
 
   // Modals
   const [showEditIncome, setShowEditIncome] = useState(false);
@@ -129,9 +128,12 @@ export default function ProfileScreen() {
 
   const handleReset = async () => {
     await clearAll();
-    await resetUser();
     setConfirmReset(false);
-    router.replace('/onboarding/welcome');
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.location.href = '/onboarding/welcome';
+    } else {
+      router.replace('/onboarding/welcome');
+    }
   };
 
   const handleExport = () => {

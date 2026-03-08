@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useRouter, Slot } from 'expo-router';
 import { getUserProfile } from '../utils/storage';
@@ -7,6 +7,7 @@ export default function RootLayout() {
   const [showSplash, setShowSplash] = useState(true);
   const [ready, setReady] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
+  const hasNavigated = useRef(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -25,8 +26,10 @@ export default function RootLayout() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Only navigate ONCE on initial app load — never re-fire after reset
   useEffect(() => {
-    if (!showSplash && ready) {
+    if (!showSplash && ready && !hasNavigated.current) {
+      hasNavigated.current = true;
       if (onboardingComplete) {
         router.replace('/(tabs)');
       } else {
