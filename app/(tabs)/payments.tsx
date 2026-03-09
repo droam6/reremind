@@ -346,7 +346,10 @@ const styles = StyleSheet.create({
     color: COLORS.black,
     fontSize: 28,
     fontWeight: FONT_WEIGHTS.bold,
-    lineHeight: 30,
+    lineHeight: 28,
+    textAlign: 'center',
+    includeFontPadding: false,
+    paddingBottom: 1,
   },
   bottomPad: {
     height: 120,

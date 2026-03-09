@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,11 +7,16 @@ import {
   Pressable,
   ScrollView,
   Modal,
+  Animated,
+  Easing,
+  Dimensions,
 } from 'react-native';
 import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
 import { Payment, PayFrequency, PaymentCategory } from '../../types/payment';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { PremiumGate } from '../ui/PremiumGate';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const FREQUENCIES: { label: string; value: PayFrequency }[] = [
   { label: 'Weekly', value: 'weekly' },
@@ -78,6 +83,50 @@ export function AddPaymentSheet({
   const [isSplit, setIsSplit] = useState(false);
   const [splitCount, setSplitCount] = useState('2');
   const [showPremiumGate, setShowPremiumGate] = useState(false);
+
+  // Slide-up animation
+  const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const overlayOpacity = useRef(new Animated.Value(0)).current;
+  const [modalVisible, setModalVisible] = useState(false);
+
+  useEffect(() => {
+    if (visible) {
+      setModalVisible(true);
+      slideAnim.setValue(SCREEN_HEIGHT);
+      overlayOpacity.setValue(0);
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 300,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(overlayOpacity, {
+          toValue: 1,
+          duration: 300,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else if (modalVisible) {
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: SCREEN_HEIGHT,
+          duration: 250,
+          easing: Easing.in(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(overlayOpacity, {
+          toValue: 0,
+          duration: 250,
+          easing: Easing.in(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setModalVisible(false);
+      });
+    }
+  }, [visible, slideAnim, overlayOpacity, modalVisible]);
 
   const isEditing = !!initialPayment;
 
@@ -147,139 +196,154 @@ export function AddPaymentSheet({
     onClose();
   };
 
+  const handleClose = () => {
+    onClose();
+  };
+
   return (
     <Modal
-      visible={visible}
+      visible={modalVisible}
       transparent
-      animationType="fade"
-      onRequestClose={onClose}
+      animationType="none"
+      onRequestClose={handleClose}
     >
-      <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={styles.modal} onPress={() => {}}>
-          {/* Close button */}
-          <Pressable style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeText}>×</Text>
-          </Pressable>
+      <View style={styles.container}>
+        <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
+        </Animated.View>
 
-          <ScrollView showsVerticalScrollIndicator={false}>
-            {/* Name */}
-            <Text style={styles.label}>NAME</Text>
-            <TextInput
-              style={styles.input}
-              value={name}
-              onChangeText={setName}
-              placeholder="e.g. Rent, Netflix, Afterpay"
-              placeholderTextColor={COLORS.textTertiary}
-            />
+        <Animated.View
+          style={[
+            styles.sheet,
+            { transform: [{ translateY: slideAnim }] },
+          ]}
+        >
+          <Pressable style={styles.modal} onPress={() => {}}>
+            {/* Close button */}
+            <Pressable style={styles.closeButton} onPress={handleClose}>
+              <Text style={styles.closeText}>×</Text>
+            </Pressable>
 
-            {/* Amount */}
-            <Text style={[styles.label, styles.fieldGap]}>
-              {isSplit ? 'FULL AMOUNT' : 'AMOUNT'}
-            </Text>
-            <View style={styles.amountContainer}>
-              <Text style={styles.dollarSign}>$</Text>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {/* Name */}
+              <Text style={styles.label}>NAME</Text>
               <TextInput
-                style={styles.amountInput}
-                value={amount}
-                onChangeText={(t) => setAmount(t.replace(/[^0-9.]/g, ''))}
-                keyboardType="numeric"
-                placeholder="0"
+                style={styles.input}
+                value={name}
+                onChangeText={setName}
+                placeholder="e.g. Rent, Netflix, Afterpay"
                 placeholderTextColor={COLORS.textTertiary}
               />
-            </View>
-            {isSplit && !isNaN(parsedAmount) && parsedAmount > 0 && (
-              <Text style={styles.shareText}>
-                Your share: {formatCurrency(userShare)}
+
+              {/* Amount */}
+              <Text style={[styles.label, styles.fieldGap]}>
+                {isSplit ? 'FULL AMOUNT' : 'AMOUNT'}
               </Text>
-            )}
-
-            {/* Frequency */}
-            <Text style={[styles.label, styles.fieldGap]}>HOW OFTEN?</Text>
-            <View style={styles.optionRow}>
-              {FREQUENCIES.map((f) => {
-                const sel = frequency === f.value;
-                return (
-                  <Pressable
-                    key={f.value}
-                    style={[styles.freqButton, sel && styles.freqButtonSelected]}
-                    onPress={() => setFrequency(f.value)}
-                  >
-                    <Text style={[styles.freqText, sel && styles.freqTextSelected]}>
-                      {f.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-
-            {/* Category */}
-            <Text style={[styles.label, styles.fieldGap]}>CATEGORY</Text>
-            <View style={styles.optionRow}>
-              {CATEGORIES.map((c) => {
-                const sel = category === c.value;
-                return (
-                  <Pressable
-                    key={c.value}
-                    style={[styles.categoryPill, sel && styles.categoryPillSelected]}
-                    onPress={() => setCategory(c.value)}
-                  >
-                    <Text style={[styles.categoryText, sel && styles.categoryTextSelected]}>
-                      {c.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-
-            {/* Split toggle */}
-            <Text style={[styles.label, styles.fieldGap]}>SPLIT THIS BILL?</Text>
-            <Pressable style={styles.splitRow} onPress={handleSplitToggle}>
-              <Text style={styles.splitLabel}>Split between people</Text>
-              <View style={[styles.toggle, isSplit && styles.toggleOn]}>
-                <View style={[styles.toggleThumb, isSplit && styles.toggleThumbOn]} />
-              </View>
-            </Pressable>
-            {isSplit && (
-              <View style={styles.splitCountRow}>
-                <Text style={styles.splitCountLabel}>How many people?</Text>
+              <View style={styles.amountContainer}>
+                <Text style={styles.dollarSign}>$</Text>
                 <TextInput
-                  style={styles.splitCountInput}
-                  value={splitCount}
-                  onChangeText={(t) => setSplitCount(t.replace(/[^0-9]/g, ''))}
+                  style={styles.amountInput}
+                  value={amount}
+                  onChangeText={(t) => setAmount(t.replace(/[^0-9.]/g, ''))}
                   keyboardType="numeric"
-                  maxLength={2}
+                  placeholder="0"
+                  placeholderTextColor={COLORS.textTertiary}
                 />
               </View>
-            )}
-
-            {/* Due date */}
-            <Text style={[styles.label, styles.fieldGap]}>NEXT DUE DATE</Text>
-            <TextInput
-              style={styles.input}
-              value={dueDate}
-              onChangeText={setDueDate}
-              placeholder="DD/MM/YYYY"
-              placeholderTextColor={COLORS.textTertiary}
-            />
-
-            {/* Action buttons */}
-            <View style={styles.actions}>
-              <Pressable style={styles.cancelButton} onPress={onClose}>
-                <Text style={styles.cancelText}>Cancel</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.saveButton, !canSave && styles.saveButtonDisabled]}
-                onPress={handleSave}
-                disabled={!canSave}
-              >
-                <Text style={styles.saveText}>
-                  {isEditing ? 'UPDATE' : 'SAVE'}
+              {isSplit && !isNaN(parsedAmount) && parsedAmount > 0 && (
+                <Text style={styles.shareText}>
+                  Your share: {formatCurrency(userShare)}
                 </Text>
+              )}
+
+              {/* Frequency */}
+              <Text style={[styles.label, styles.fieldGap]}>HOW OFTEN?</Text>
+              <View style={styles.optionRow}>
+                {FREQUENCIES.map((f) => {
+                  const sel = frequency === f.value;
+                  return (
+                    <Pressable
+                      key={f.value}
+                      style={[styles.freqButton, sel && styles.freqButtonSelected]}
+                      onPress={() => setFrequency(f.value)}
+                    >
+                      <Text style={[styles.freqText, sel && styles.freqTextSelected]}>
+                        {f.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              {/* Category */}
+              <Text style={[styles.label, styles.fieldGap]}>CATEGORY</Text>
+              <View style={styles.optionRow}>
+                {CATEGORIES.map((c) => {
+                  const sel = category === c.value;
+                  return (
+                    <Pressable
+                      key={c.value}
+                      style={[styles.categoryPill, sel && styles.categoryPillSelected]}
+                      onPress={() => setCategory(c.value)}
+                    >
+                      <Text style={[styles.categoryText, sel && styles.categoryTextSelected]}>
+                        {c.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              {/* Split toggle */}
+              <Text style={[styles.label, styles.fieldGap]}>SPLIT THIS BILL?</Text>
+              <Pressable style={styles.splitRow} onPress={handleSplitToggle}>
+                <Text style={styles.splitLabel}>Split between people</Text>
+                <View style={[styles.toggle, isSplit && styles.toggleOn]}>
+                  <View style={[styles.toggleThumb, isSplit && styles.toggleThumbOn]} />
+                </View>
               </Pressable>
-            </View>
-          </ScrollView>
-        </Pressable>
-      </Pressable>
+              {isSplit && (
+                <View style={styles.splitCountRow}>
+                  <Text style={styles.splitCountLabel}>How many people?</Text>
+                  <TextInput
+                    style={styles.splitCountInput}
+                    value={splitCount}
+                    onChangeText={(t) => setSplitCount(t.replace(/[^0-9]/g, ''))}
+                    keyboardType="numeric"
+                    maxLength={2}
+                  />
+                </View>
+              )}
+
+              {/* Due date */}
+              <Text style={[styles.label, styles.fieldGap]}>NEXT DUE DATE</Text>
+              <TextInput
+                style={styles.input}
+                value={dueDate}
+                onChangeText={setDueDate}
+                placeholder="DD/MM/YYYY"
+                placeholderTextColor={COLORS.textTertiary}
+              />
+
+              {/* Action buttons */}
+              <View style={styles.actions}>
+                <Pressable style={styles.cancelButton} onPress={handleClose}>
+                  <Text style={styles.cancelText}>Cancel</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.saveButton, !canSave && styles.saveButtonDisabled]}
+                  onPress={handleSave}
+                  disabled={!canSave}
+                >
+                  <Text style={styles.saveText}>
+                    {isEditing ? 'UPDATE' : 'SAVE'}
+                  </Text>
+                </Pressable>
+              </View>
+            </ScrollView>
+          </Pressable>
+        </Animated.View>
+      </View>
 
       {showPremiumGate && (
         <PremiumGate
@@ -292,10 +356,17 @@ export function AddPaymentSheet({
 }
 
 const styles = StyleSheet.create({
-  overlay: {
+  container: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+  },
+  sheet: {
+    width: '100%',
     alignItems: 'center',
     paddingHorizontal: SPACING.lg,
   },

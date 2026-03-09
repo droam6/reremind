@@ -64,25 +64,33 @@ export default function RootLayout() {
     }
   }, [showSplash, ready, onboardingComplete, router]);
 
-  if (showSplash || !ready) {
-    return (
-      <Animated.View style={[styles.splash, { opacity: splashOpacity }]}>
-        <Animated.Text style={[styles.splashText, { opacity: textOpacity }]}>
-          RE-REMIND
-        </Animated.Text>
-      </Animated.View>
-    );
-  }
-
-  return <Slot />;
+  // Layered approach: Slot renders underneath, splash overlays on top
+  // This eliminates the white flash between splash and content
+  return (
+    <View style={styles.root}>
+      <Slot />
+      {showSplash && (
+        <Animated.View style={[styles.splash, { opacity: splashOpacity }]} pointerEvents="none">
+          <Animated.Text style={[styles.splashText, { opacity: textOpacity }]}>
+            RE-REMIND
+          </Animated.Text>
+        </Animated.View>
+      )}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-  splash: {
+  root: {
     flex: 1,
+    backgroundColor: '#0A0A0A',
+  },
+  splash: {
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: '#0A0A0A',
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 999,
   },
   splashText: {
     color: '#FFFFFF',

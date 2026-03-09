@@ -1,5 +1,5 @@
 import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Animated, Easing } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Animated, Easing, LayoutAnimation, Platform, UIManager } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
@@ -16,6 +16,11 @@ import { generateId } from '../../utils/generateId';
 import { saveIncome } from '../../utils/storage';
 import { ProgressRing } from '../../components/dashboard/ProgressRing';
 import { WhatIfSimulator } from '../../components/dashboard/WhatIfSimulator';
+
+// Enable LayoutAnimation on Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -75,6 +80,31 @@ function formatShortDate(dateStr: string): string {
   const d = parseDate(dateStr);
   return `${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`;
 }
+
+function freqLabel(freq: string): string {
+  switch (freq) {
+    case 'weekly': return 'Weekly';
+    case 'fortnightly': return 'Fortnightly';
+    case 'monthly': return 'Monthly';
+    case 'quarterly': return 'Quarterly';
+    case 'yearly': return 'Yearly';
+    default: return freq;
+  }
+}
+
+const expandAnimation = {
+  duration: 300,
+  create: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+  update: { type: LayoutAnimation.Types.easeInEaseOut },
+  delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+};
+
+const collapseAnimation = {
+  duration: 200,
+  create: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+  update: { type: LayoutAnimation.Types.easeInEaseOut },
+  delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+};
 
 export default function HomeScreen() {
   // ALL hooks called unconditionally at the top — no early returns
@@ -367,7 +397,9 @@ export default function HomeScreen() {
               style={styles.calendarCell}
               onPress={() => {
                 if (hasDayPayments) {
-                  setExpandedDay(expandedDay === day.dateStr ? null : day.dateStr);
+                  const isCollapsing = expandedDay === day.dateStr;
+                  LayoutAnimation.configureNext(isCollapsing ? collapseAnimation : expandAnimation);
+                  setExpandedDay(isCollapsing ? null : day.dateStr);
                 }
               }}
             >
@@ -388,10 +420,29 @@ export default function HomeScreen() {
       {/* Expanded day detail */}
       {expandedDayInfo && expandedDayInfo.payments.length > 0 && (
         <View style={styles.expandedDay}>
-          {expandedDayInfo.payments.map((p) => (
-            <View key={p.id} style={styles.expandedRow}>
-              <Text style={styles.expandedName}>{capitalizeName(p.name)}</Text>
-              <Text style={styles.expandedAmount}>{formatCurrency(p.amount)}</Text>
+          {expandedDayInfo.payments.length > 1 && (
+            <View style={styles.expandedSummary}>
+              <Text style={styles.expandedSummaryText}>
+                {expandedDayInfo.payments.length} payments · {formatCurrency(expandedDayInfo.total)}
+              </Text>
+            </View>
+          )}
+          {expandedDayInfo.payments.map((p, i) => (
+            <View key={p.id}>
+              <View style={styles.expandedCard}>
+                <View style={styles.expandedCardTop}>
+                  <Text style={styles.expandedName}>{capitalizeName(p.name)}</Text>
+                  <Text style={styles.expandedAmount}>{formatCurrency(p.amount)}</Text>
+                </View>
+                <View style={styles.expandedCardBottom}>
+                  <View style={styles.expandedCategoryPill}>
+                    <Text style={styles.expandedCategoryText}>{p.category.toUpperCase()}</Text>
+                  </View>
+                  <Text style={styles.expandedFrequency}>{freqLabel(p.frequency)}</Text>
+                  <Text style={styles.expandedDue}>Due {formatRelativeDate(p.nextDueDate)}</Text>
+                </View>
+              </View>
+              {i < expandedDayInfo.payments.length - 1 && <View style={styles.expandedSeparator} />}
             </View>
           ))}
         </View>
@@ -690,23 +741,67 @@ const styles = StyleSheet.create({
   expandedDay: {
     backgroundColor: COLORS.surface,
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm,
+    paddingVertical: SPACING.md,
     marginBottom: SPACING.lg,
+    overflow: 'hidden',
   },
-  expandedRow: {
+  expandedSummary: {
+    paddingBottom: SPACING.sm,
+    marginBottom: SPACING.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.surfaceLight,
+  },
+  expandedSummaryText: {
+    color: COLORS.accent,
+    fontSize: FONT_SIZES.bodySmall,
+    fontWeight: FONT_WEIGHTS.bold,
+  },
+  expandedCard: {
+    paddingVertical: SPACING.sm,
+  },
+  expandedCardTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: SPACING.sm,
+    marginBottom: SPACING.xs,
   },
   expandedName: {
     color: COLORS.text,
-    fontSize: FONT_SIZES.bodySmall,
+    fontSize: FONT_SIZES.body,
+    fontWeight: FONT_WEIGHTS.bold,
   },
   expandedAmount: {
-    color: COLORS.text,
-    fontSize: FONT_SIZES.bodySmall,
+    color: COLORS.accent,
+    fontSize: FONT_SIZES.h3,
     fontWeight: FONT_WEIGHTS.bold,
+  },
+  expandedCardBottom: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  expandedCategoryPill: {
+    backgroundColor: COLORS.surfaceLight,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 1,
+    borderRadius: BORDER_RADIUS.subtle,
+  },
+  expandedCategoryText: {
+    color: COLORS.textTertiary,
+    fontSize: 10,
+    textTransform: 'uppercase',
+  },
+  expandedFrequency: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZES.caption,
+  },
+  expandedDue: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZES.caption,
+  },
+  expandedSeparator: {
+    height: 1,
+    backgroundColor: COLORS.surfaceLight,
   },
 
   // Heat map
