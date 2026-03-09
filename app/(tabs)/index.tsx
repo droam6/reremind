@@ -171,7 +171,9 @@ export default function HomeScreen() {
   // Calendar expand/collapse animation refs (effect moved after dayPaymentMap)
   const expandHeight = useRef(new Animated.Value(0)).current;
   const expandOpacity = useRef(new Animated.Value(0)).current;
+  const expandMargin = useRef(new Animated.Value(0)).current;
   const prevExpandedDay = useRef<string | null>(null);
+  const [expandVisible, setExpandVisible] = useState(false);
 
   // First-mount staggered animations (only on initial mount, not tab switches)
   const isFirstMount = useRef(true);
@@ -266,8 +268,10 @@ export default function HomeScreen() {
       const count = dayInfo?.payments.length ?? 1;
       const targetHeight = getExpandedHeight(count);
 
+      setExpandVisible(true);
       expandHeight.setValue(0);
       expandOpacity.setValue(0);
+      expandMargin.setValue(0);
       Animated.parallel([
         Animated.timing(expandHeight, {
           toValue: targetHeight,
@@ -278,6 +282,12 @@ export default function HomeScreen() {
         Animated.timing(expandOpacity, {
           toValue: 1,
           duration: 300,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: false,
+        }),
+        Animated.timing(expandMargin, {
+          toValue: SPACING.lg,
+          duration: 400,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: false,
         }),
@@ -296,10 +306,18 @@ export default function HomeScreen() {
           easing: Easing.in(Easing.cubic),
           useNativeDriver: false,
         }),
-      ]).start();
+        Animated.timing(expandMargin, {
+          toValue: 0,
+          duration: 300,
+          easing: Easing.in(Easing.cubic),
+          useNativeDriver: false,
+        }),
+      ]).start(() => {
+        setExpandVisible(false);
+      });
     }
     prevExpandedDay.current = expandedDay;
-  }, [expandedDay, dayPaymentMap, expandHeight, expandOpacity]);
+  }, [expandedDay, dayPaymentMap, expandHeight, expandOpacity, expandMargin]);
 
   const weekStats = useMemo(() => {
     if (!hasDashboardData) return { count: 0, total: 0, busiest: { date: '', count: 0, total: 0 } };
@@ -453,8 +471,8 @@ export default function HomeScreen() {
       </Animated.View>
 
       {/* Expanded day detail */}
-      {(expandedDay || prevExpandedDay.current) && (
-        <Animated.View style={[styles.expandedDay, { height: expandHeight, opacity: expandOpacity }]}>
+      {expandVisible && (
+        <Animated.View style={[styles.expandedDay, { height: expandHeight, opacity: expandOpacity, marginBottom: expandMargin }]}>
           {expandedDayInfo && expandedDayInfo.payments.length > 0 && (
             <>
               {expandedDayInfo.payments.length > 1 && (
@@ -780,8 +798,6 @@ const styles = StyleSheet.create({
   expandedDay: {
     backgroundColor: COLORS.surface,
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    marginBottom: SPACING.lg,
     overflow: 'hidden',
   },
   expandedSummary: {
