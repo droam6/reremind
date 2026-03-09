@@ -203,7 +203,8 @@ export function DatePicker({ value, onChange, label, placeholder, disablePast = 
 
 const styles = StyleSheet.create({
   wrapper: {
-    zIndex: 10,
+    zIndex: 100,
+    overflow: 'visible',
   },
   label: {
     color: COLORS.textSecondary,
@@ -215,10 +216,13 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     gap: SPACING.sm,
+    overflow: 'visible',
   },
   dropdownWrapper: {
     flex: 1,
-    zIndex: 10,
+    position: 'relative',
+    zIndex: 100,
+    overflow: 'visible',
   },
   selector: {
     backgroundColor: COLORS.surface,
@@ -242,13 +246,21 @@ const styles = StyleSheet.create({
   },
   dropdown: {
     position: 'absolute',
-    top: 52,
+    top: '100%',
     left: 0,
     right: 0,
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: '#1E1E1E',
     borderRadius: BORDER_RADIUS.sharp,
     maxHeight: 200,
-    zIndex: 100,
+    zIndex: 9999,
+    elevation: 999,
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: '#2A2A2A',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
   dropdownScroll: {
     maxHeight: 200,
