@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -10,6 +10,7 @@ import { formatCurrency } from '../../utils/formatCurrency';
 import { formatRelativeDate, formatCountdown, parseDate } from '../../utils/formatDate';
 import { getDayPayments, getWeekPayments, getWeekTotal, getBusiestDay } from '../../utils/calculations';
 import { ProgressRing } from '../../components/dashboard/ProgressRing';
+import { WhatIfSimulator } from '../../components/dashboard/WhatIfSimulator';
 
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -30,11 +31,28 @@ function getHealthColor(remaining: number, income: number): string {
   return COLORS.danger;
 }
 
+function getStatusBadge(remaining: number, income: number): { label: string; color: string } {
+  if (remaining === 0) return { label: 'EMPTY', color: COLORS.danger };
+  if (income === 0) return { label: 'COMFORTABLE', color: COLORS.accent };
+  const ratio = remaining / income;
+  if (ratio > 0.3) return { label: 'COMFORTABLE', color: COLORS.accent };
+  if (ratio > 0.1) return { label: 'CAREFUL', color: COLORS.warning };
+  return { label: 'TIGHT', color: COLORS.danger };
+}
+
 function getDotColor(count: number): string | null {
   if (count === 0) return null;
   if (count === 1) return COLORS.accent;
   if (count === 2) return COLORS.warning;
   return COLORS.danger;
+}
+
+function getHeatColor(total: number): string {
+  if (total === 0) return '#141414';
+  if (total <= 50) return '#2A2215';
+  if (total <= 200) return '#3D3018';
+  if (total <= 500) return 'rgba(212, 145, 58, 0.4)';
+  return 'rgba(196, 74, 74, 0.5)';
 }
 
 function plural(count: number, word: string): string {
@@ -46,6 +64,11 @@ function daysFromToday(dateStr: string): number {
   today.setHours(0, 0, 0, 0);
   const target = parseDate(dateStr);
   return Math.round((target.getTime() - today.getTime()) / 86400000);
+}
+
+function formatShortDate(dateStr: string): string {
+  const d = parseDate(dateStr);
+  return `${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`;
 }
 
 export default function HomeScreen() {
@@ -109,6 +132,9 @@ export default function HomeScreen() {
             <Text style={styles.ringSub}>
               {cycleData ? formatCountdown(cycleData.daysUntilPayday) : ''}
             </Text>
+            <Text style={[styles.statusBadge, { color: COLORS.accent }]}>
+              COMFORTABLE
+            </Text>
           </ProgressRing>
         </View>
         <Text style={styles.addPaymentsHint}>
@@ -121,6 +147,7 @@ export default function HomeScreen() {
 
   // Full dashboard
   const healthColor = getHealthColor(cycleData.remainingAfterBills, income.amount);
+  const statusBadge = getStatusBadge(cycleData.remainingAfterBills, income.amount);
   const ringProgress = income.amount > 0
     ? Math.min(1, Math.max(0, cycleData.remainingAfterBills / income.amount))
     : 0;
@@ -146,16 +173,30 @@ export default function HomeScreen() {
   // Expanded day data
   const expandedDayInfo = expandedDay ? dayPaymentMap.get(expandedDay) : null;
 
+  // Danger days heat map data
+  const heatMapData = useMemo(() => {
+    const startDate = parseDate(cycleData.cycleStartDate);
+    const cells: { dateStr: string; total: number; isToday: boolean }[] = [];
+    for (let i = 0; i < cycleData.cycleDays; i++) {
+      const d = new Date(startDate);
+      d.setDate(d.getDate() + i);
+      const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const dayTotal = cycleData.cycleOccurrences
+        .filter((o) => o.date === ds)
+        .reduce((sum, o) => sum + o.payment.amount, 0);
+      cells.push({ dateStr: ds, total: dayTotal, isToday: ds === todayStr });
+    }
+    return cells;
+  }, [cycleData, todayStr]);
+
   // Week snapshot
   const weekPaymentDays = getWeekPayments(payments);
   const weekPaymentCount = weekPaymentDays.reduce((sum, d) => sum + d.payments.length, 0);
   const weekTotal = getWeekTotal(payments);
   const busiest = getBusiestDay(payments);
-
-  // FIX 6: Smarter third stat
   const hasCluster = busiest.count >= 2;
   const busiestDayName = busiest.date
-    ? DAY_NAMES[new Date(busiest.date).getDay()]
+    ? DAY_NAMES[parseDate(busiest.date).getDay()]
     : '';
 
   // Next payment
@@ -167,8 +208,6 @@ export default function HomeScreen() {
     nextPayment.nextDueDate === todayStr ||
     nextPayment.nextDueDate === new Date(today.getTime() + 86400000).toISOString().split('T')[0]
   );
-
-  // Days until next payment (for FIX 6 fallback)
   const daysToNext = nextPayment ? daysFromToday(nextPayment.nextDueDate) : null;
 
   // Coming up (skip first since it's shown in next payment card)
@@ -183,12 +222,12 @@ export default function HomeScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Section 1: Header */}
+      {/* 1. Header */}
       <View style={styles.header}>
         <Text style={styles.headerDate}>{formatHeaderDate()}</Text>
       </View>
 
-      {/* Section 2: Progress Ring */}
+      {/* 2. Progress Ring with safe badge */}
       <View style={styles.heroZone}>
         <ProgressRing
           progress={ringProgress}
@@ -205,10 +244,13 @@ export default function HomeScreen() {
           <Text style={styles.ringSub}>
             {formatCountdown(cycleData.daysUntilPayday)}
           </Text>
+          <Text style={[styles.statusBadge, { color: statusBadge.color }]}>
+            {statusBadge.label}
+          </Text>
         </ProgressRing>
       </View>
 
-      {/* Section 3: 7-Day Calendar Strip */}
+      {/* 3. 7-Day Calendar Strip */}
       <View style={styles.calendarStrip}>
         {calendarDays.map((day) => {
           const dayInfo = dayPaymentMap.get(day.dateStr);
@@ -250,7 +292,32 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Section 4: Next Payment Card */}
+      {/* 4. Danger Days Heat Map */}
+      <View style={styles.section}>
+        <Text style={styles.sectionHeader}>PAY CYCLE</Text>
+        <View style={styles.heatMapContainer}>
+          {heatMapData.map((cell, i) => (
+            <View
+              key={cell.dateStr}
+              style={[
+                styles.heatCell,
+                {
+                  backgroundColor: getHeatColor(cell.total),
+                  flex: 1,
+                  marginLeft: i === 0 ? 0 : 1,
+                },
+                cell.isToday && styles.heatCellToday,
+              ]}
+            />
+          ))}
+        </View>
+        <View style={styles.heatLabels}>
+          <Text style={styles.heatLabel}>{formatShortDate(cycleData.cycleStartDate)}</Text>
+          <Text style={styles.heatLabel}>Next payday</Text>
+        </View>
+      </View>
+
+      {/* 5. Next Payment Card */}
       {nextPayment && (
         <View style={styles.section}>
           <View style={[
@@ -286,7 +353,7 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Section 5: This Week Snapshot */}
+      {/* 6. This Week Snapshot */}
       {weekPaymentCount > 0 && (
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>THIS WEEK</Text>
@@ -320,7 +387,7 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Section 6: Coming Up */}
+      {/* 7. Coming Up */}
       {comingUp.length > 0 && (
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>COMING UP</Text>
@@ -350,7 +417,14 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Section 7: This Cycle Summary */}
+      {/* 8. What If Simulator */}
+      <WhatIfSimulator
+        remainingAfterBills={cycleData.remainingAfterBills}
+        incomeAmount={income.amount}
+        daysUntilPayday={cycleData.daysUntilPayday}
+      />
+
+      {/* 9. This Cycle Summary */}
       <View style={styles.section}>
         <Text style={styles.sectionHeader}>THIS CYCLE</Text>
         <View style={styles.summaryRow}>
@@ -369,6 +443,7 @@ export default function HomeScreen() {
         )}
       </View>
 
+      {/* 10. Bottom padding */}
       <View style={styles.bottomPad} />
     </ScrollView>
   );
@@ -452,6 +527,13 @@ const styles = StyleSheet.create({
   ringSub: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
+    marginBottom: SPACING.sm,
+  },
+  statusBadge: {
+    fontSize: FONT_SIZES.caption,
+    fontWeight: FONT_WEIGHTS.bold,
+    textTransform: 'uppercase',
+    letterSpacing: 3,
   },
 
   // Calendar strip
@@ -514,6 +596,28 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     fontSize: FONT_SIZES.bodySmall,
     fontWeight: FONT_WEIGHTS.bold,
+  },
+
+  // Heat map
+  heatMapContainer: {
+    flexDirection: 'row',
+    height: 32,
+    marginBottom: SPACING.sm,
+  },
+  heatCell: {
+    height: 32,
+  },
+  heatCellToday: {
+    borderTopWidth: 2,
+    borderTopColor: COLORS.text,
+  },
+  heatLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  heatLabel: {
+    color: COLORS.textTertiary,
+    fontSize: FONT_SIZES.caption,
   },
 
   // Sections

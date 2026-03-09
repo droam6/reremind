@@ -17,6 +17,9 @@ export interface CycleData {
   remainingAfterBills: number;
   totalCommitted: number;
   daysUntilPayday: number;
+  cycleDays: number;
+  cycleStartDate: string;
+  cycleEndDate: string;
   nextPayment: Payment | null;
   upcomingPayments: Payment[];
   paymentClusters: PaymentCluster[];
@@ -156,6 +159,9 @@ export function calculateCycleData(income: Income, payments: Payment[]): CycleDa
     remainingAfterBills,
     totalCommitted,
     daysUntilPayday,
+    cycleDays,
+    cycleStartDate: toDateStr(cycleStart),
+    cycleEndDate: toDateStr(cycleEnd),
     nextPayment,
     upcomingPayments,
     paymentClusters,
