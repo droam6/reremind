@@ -8,7 +8,7 @@ import { usePayments } from '../../hooks/usePayments';
 import { useCycleData } from '../../hooks/useCycleData';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatRelativeDate, formatCountdown, parseDate } from '../../utils/formatDate';
-import { getDayPayments, getWeekPayments, getWeekTotal, getBusiestDay } from '../../utils/calculations';
+import { getDayPayments, getWeekPayments, getWeekTotal, getBusiestDay, DayPaymentInfo } from '../../utils/calculations';
 import { ProgressRing } from '../../components/dashboard/ProgressRing';
 import { WhatIfSimulator } from '../../components/dashboard/WhatIfSimulator';
 
@@ -72,7 +72,7 @@ function formatShortDate(dateStr: string): string {
 }
 
 export default function HomeScreen() {
-  // ALL hooks must be called unconditionally at the top
+  // ALL hooks called unconditionally at the top — no early returns
   const router = useRouter();
   const { income, loading: incomeLoading, reload: reloadIncome } = useIncome();
   const { payments, loading: paymentsLoading, reload: reloadPayments } = usePayments();
@@ -87,8 +87,8 @@ export default function HomeScreen() {
     }, [reloadIncome, reloadPayments])
   );
 
-  // Heat map data — must be called unconditionally (before early returns)
   const todayStr = new Date().toISOString().split('T')[0];
+
   const heatMapData = useMemo(() => {
     if (!cycleData) return [];
     const startDate = parseDate(cycleData.cycleStartDate);
@@ -105,9 +105,83 @@ export default function HomeScreen() {
     return cells;
   }, [cycleData, todayStr]);
 
-  // --- Early returns (after all hooks) ---
-
+  // Derived state — safe to compute even when data is missing
   const loading = incomeLoading || paymentsLoading;
+  const hasIncome = income !== null && income.amount > 0;
+  const hasDashboardData = hasIncome && cycleData !== null && payments.length > 0;
+
+  // Full dashboard derived values (safe defaults when data missing)
+  const healthColor = hasDashboardData
+    ? getHealthColor(cycleData.remainingAfterBills, income.amount)
+    : COLORS.accent;
+  const statusBadge = hasDashboardData
+    ? getStatusBadge(cycleData.remainingAfterBills, income.amount)
+    : { label: 'COMFORTABLE', color: COLORS.accent };
+  const ringProgress = hasDashboardData && income.amount > 0
+    ? Math.min(1, Math.max(0, cycleData.remainingAfterBills / income.amount))
+    : 1;
+
+  const today = new Date();
+  const calendarDays = useMemo(() => {
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(today);
+      d.setDate(d.getDate() + i);
+      return {
+        date: d,
+        dateStr: d.toISOString().split('T')[0],
+        dayLabel: DAY_LABELS[d.getDay()],
+        dateNum: d.getDate(),
+        isToday: i === 0,
+      };
+    });
+  }, [todayStr]);
+
+  const dayPaymentMap = useMemo(() => {
+    if (!hasDashboardData) return new Map<string, DayPaymentInfo>();
+    return new Map<string, DayPaymentInfo>(
+      calendarDays.map((d) => [d.dateStr, getDayPayments(payments, d.dateStr)])
+    );
+  }, [calendarDays, payments, hasDashboardData]);
+
+  const expandedDayInfo = expandedDay ? dayPaymentMap.get(expandedDay) : undefined;
+
+  const weekStats = useMemo(() => {
+    if (!hasDashboardData) return { count: 0, total: 0, busiest: { date: '', count: 0, total: 0 } };
+    const weekPaymentDays = getWeekPayments(payments);
+    return {
+      count: weekPaymentDays.reduce((sum, d) => sum + d.payments.length, 0),
+      total: getWeekTotal(payments),
+      busiest: getBusiestDay(payments),
+    };
+  }, [payments, hasDashboardData]);
+
+  const hasCluster = weekStats.busiest.count >= 2;
+  const busiestDayName = weekStats.busiest.date
+    ? DAY_NAMES[parseDate(weekStats.busiest.date).getDay()]
+    : '';
+
+  const nextPayment = hasDashboardData ? (cycleData.upcomingPayments[0] ?? null) : null;
+  const nextPaymentCluster = nextPayment && hasDashboardData
+    ? cycleData.paymentClusters.find((c) => c.date === nextPayment.nextDueDate) ?? null
+    : null;
+  const isNextSoon = nextPayment && (
+    nextPayment.nextDueDate === todayStr ||
+    nextPayment.nextDueDate === new Date(today.getTime() + 86400000).toISOString().split('T')[0]
+  );
+  const daysToNext = nextPayment ? daysFromToday(nextPayment.nextDueDate) : null;
+
+  const comingUp = hasDashboardData ? cycleData.upcomingPayments.slice(1, 4) : [];
+
+  const largestPayment = useMemo(() => {
+    if (!hasDashboardData) return null;
+    const cyclePaymentIds = new Set(cycleData.cycleOccurrences.map((o) => o.payment.id));
+    const cycleFiltered = payments.filter((p) => cyclePaymentIds.has(p.id));
+    return cycleFiltered.length > 0
+      ? [...cycleFiltered].sort((a, b) => b.amount - a.amount)[0]
+      : null;
+  }, [payments, cycleData, hasDashboardData]);
+
+  // --- Single return — no early returns, just conditional JSX ---
 
   if (loading) {
     return (
@@ -117,7 +191,7 @@ export default function HomeScreen() {
     );
   }
 
-  if (!income || income.amount === 0) {
+  if (!hasIncome) {
     return (
       <View style={[styles.container, styles.centred]}>
         <Text style={styles.emptyText}>Set up your income to get started</Text>
@@ -131,7 +205,7 @@ export default function HomeScreen() {
     );
   }
 
-  if (!cycleData || payments.length === 0) {
+  if (!hasDashboardData) {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.header}>
@@ -165,65 +239,6 @@ export default function HomeScreen() {
       </ScrollView>
     );
   }
-
-  // --- Full dashboard (cycleData and income guaranteed non-null below) ---
-
-  const healthColor = getHealthColor(cycleData.remainingAfterBills, income.amount);
-  const statusBadge = getStatusBadge(cycleData.remainingAfterBills, income.amount);
-  const ringProgress = income.amount > 0
-    ? Math.min(1, Math.max(0, cycleData.remainingAfterBills / income.amount))
-    : 0;
-
-  // Calendar strip data
-  const today = new Date();
-  const calendarDays = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(today);
-    d.setDate(d.getDate() + i);
-    return {
-      date: d,
-      dateStr: d.toISOString().split('T')[0],
-      dayLabel: DAY_LABELS[d.getDay()],
-      dateNum: d.getDate(),
-      isToday: i === 0,
-    };
-  });
-  const dayPaymentMap = new Map(
-    calendarDays.map((d) => [d.dateStr, getDayPayments(payments, d.dateStr)])
-  );
-
-  // Expanded day data
-  const expandedDayInfo = expandedDay ? dayPaymentMap.get(expandedDay) : null;
-
-  // Week snapshot
-  const weekPaymentDays = getWeekPayments(payments);
-  const weekPaymentCount = weekPaymentDays.reduce((sum, d) => sum + d.payments.length, 0);
-  const weekTotal = getWeekTotal(payments);
-  const busiest = getBusiestDay(payments);
-  const hasCluster = busiest.count >= 2;
-  const busiestDayName = busiest.date
-    ? DAY_NAMES[parseDate(busiest.date).getDay()]
-    : '';
-
-  // Next payment
-  const nextPayment = cycleData.upcomingPayments[0] ?? null;
-  const nextPaymentCluster = nextPayment
-    ? cycleData.paymentClusters.find((c) => c.date === nextPayment.nextDueDate)
-    : null;
-  const isNextSoon = nextPayment && (
-    nextPayment.nextDueDate === todayStr ||
-    nextPayment.nextDueDate === new Date(today.getTime() + 86400000).toISOString().split('T')[0]
-  );
-  const daysToNext = nextPayment ? daysFromToday(nextPayment.nextDueDate) : null;
-
-  // Coming up (skip first since it's shown in next payment card)
-  const comingUp = cycleData.upcomingPayments.slice(1, 4);
-
-  // Largest payment — only from payments actually due THIS cycle
-  const cyclePaymentIds = new Set(cycleData.cycleOccurrences.map((o) => o.payment.id));
-  const cycleFilteredPayments = payments.filter((p) => cyclePaymentIds.has(p.id));
-  const largestPayment = cycleFilteredPayments.length > 0
-    ? [...cycleFilteredPayments].sort((a, b) => b.amount - a.amount)[0]
-    : null;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -359,23 +374,23 @@ export default function HomeScreen() {
       )}
 
       {/* 6. This Week Snapshot */}
-      {weekPaymentCount > 0 && (
+      {weekStats.count > 0 && (
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>THIS WEEK</Text>
           <View style={styles.weekCard}>
             <View style={styles.weekStat}>
-              <Text style={styles.weekStatNumber}>{weekPaymentCount}</Text>
-              <Text style={styles.weekStatLabel}>{plural(weekPaymentCount, 'payment')}</Text>
+              <Text style={styles.weekStatNumber}>{weekStats.count}</Text>
+              <Text style={styles.weekStatLabel}>{plural(weekStats.count, 'payment')}</Text>
             </View>
             <View style={styles.weekStat}>
-              <Text style={styles.weekStatNumber}>{formatCurrency(weekTotal)}</Text>
+              <Text style={styles.weekStatNumber}>{formatCurrency(weekStats.total)}</Text>
               <Text style={styles.weekStatLabel}>due</Text>
             </View>
             <View style={styles.weekStat}>
               {hasCluster ? (
                 <>
                   <Text style={[styles.weekStatNumber, { color: COLORS.warning }]}>
-                    {busiest.count} on {busiestDayName}
+                    {weekStats.busiest.count} on {busiestDayName}
                   </Text>
                   <Text style={styles.weekStatLabel}>busiest day</Text>
                 </>
