@@ -72,6 +72,7 @@ function formatShortDate(dateStr: string): string {
 }
 
 export default function HomeScreen() {
+  // ALL hooks must be called unconditionally at the top
   const router = useRouter();
   const { income, loading: incomeLoading, reload: reloadIncome } = useIncome();
   const { payments, loading: paymentsLoading, reload: reloadPayments } = usePayments();
@@ -85,6 +86,26 @@ export default function HomeScreen() {
       setExpandedDay(null);
     }, [reloadIncome, reloadPayments])
   );
+
+  // Heat map data — must be called unconditionally (before early returns)
+  const todayStr = new Date().toISOString().split('T')[0];
+  const heatMapData = useMemo(() => {
+    if (!cycleData) return [];
+    const startDate = parseDate(cycleData.cycleStartDate);
+    const cells: { dateStr: string; total: number; isToday: boolean }[] = [];
+    for (let i = 0; i < cycleData.cycleDays; i++) {
+      const d = new Date(startDate);
+      d.setDate(d.getDate() + i);
+      const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const dayTotal = cycleData.cycleOccurrences
+        .filter((o) => o.date === ds)
+        .reduce((sum, o) => sum + o.payment.amount, 0);
+      cells.push({ dateStr: ds, total: dayTotal, isToday: ds === todayStr });
+    }
+    return cells;
+  }, [cycleData, todayStr]);
+
+  // --- Early returns (after all hooks) ---
 
   const loading = incomeLoading || paymentsLoading;
 
@@ -145,7 +166,8 @@ export default function HomeScreen() {
     );
   }
 
-  // Full dashboard
+  // --- Full dashboard (cycleData and income guaranteed non-null below) ---
+
   const healthColor = getHealthColor(cycleData.remainingAfterBills, income.amount);
   const statusBadge = getStatusBadge(cycleData.remainingAfterBills, income.amount);
   const ringProgress = income.amount > 0
@@ -154,7 +176,6 @@ export default function HomeScreen() {
 
   // Calendar strip data
   const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
   const calendarDays = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today);
     d.setDate(d.getDate() + i);
@@ -172,22 +193,6 @@ export default function HomeScreen() {
 
   // Expanded day data
   const expandedDayInfo = expandedDay ? dayPaymentMap.get(expandedDay) : null;
-
-  // Danger days heat map data
-  const heatMapData = useMemo(() => {
-    const startDate = parseDate(cycleData.cycleStartDate);
-    const cells: { dateStr: string; total: number; isToday: boolean }[] = [];
-    for (let i = 0; i < cycleData.cycleDays; i++) {
-      const d = new Date(startDate);
-      d.setDate(d.getDate() + i);
-      const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      const dayTotal = cycleData.cycleOccurrences
-        .filter((o) => o.date === ds)
-        .reduce((sum, o) => sum + o.payment.amount, 0);
-      cells.push({ dateStr: ds, total: dayTotal, isToday: ds === todayStr });
-    }
-    return cells;
-  }, [cycleData, todayStr]);
 
   // Week snapshot
   const weekPaymentDays = getWeekPayments(payments);
