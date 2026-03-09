@@ -4,6 +4,7 @@ import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../
 import { useOnboarding } from './OnboardingContext';
 import { useIncome } from '../../hooks/useIncome';
 import { useUser } from '../../hooks/useUser';
+import { useLifetimeStats } from '../../hooks/useLifetimeStats';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatRelativeDate } from '../../utils/formatDate';
 import { savePayments } from '../../utils/storage';
@@ -32,6 +33,7 @@ export default function ConfirmationScreen() {
   const { income: onboardingIncome, payments } = useOnboarding();
   const { saveIncome } = useIncome();
   const { completeOnboarding } = useUser();
+  const { initStats } = useLifetimeStats();
 
   const totalCommitted = payments.reduce((sum, p) => sum + p.amount, 0);
   const remaining = Math.max(0, onboardingIncome.amount - totalCommitted);
@@ -51,6 +53,7 @@ export default function ConfirmationScreen() {
 
     await saveIncome(incomeData);
     await savePayments(payments);
+    await initStats(payments.length, totalCommitted);
     await completeOnboarding();
     router.replace('/(tabs)');
   };

@@ -2,12 +2,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Income } from '../types/income';
 import { Payment, Card } from '../types/payment';
 import { UserProfile } from '../types/user';
+import { CycleRecord, LifetimeStats } from '../types/history';
 
 const KEYS = {
   INCOME: '@reremind/income',
   PAYMENTS: '@reremind/payments',
   CARDS: '@reremind/cards',
   USER: '@reremind/user',
+  HISTORY: '@reremind/history',
+  LIFETIME: '@reremind/lifetime',
 } as const;
 
 export async function getIncome(): Promise<Income | null> {
@@ -102,9 +105,62 @@ export async function saveUserProfile(profile: UserProfile): Promise<void> {
   }
 }
 
+// Cycle history
+
+export async function getCycleHistory(): Promise<CycleRecord[]> {
+  try {
+    const raw = await AsyncStorage.getItem(KEYS.HISTORY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    console.error('Failed to read cycle history:', e);
+    return [];
+  }
+}
+
+export async function saveCycleHistory(history: CycleRecord[]): Promise<void> {
+  try {
+    await AsyncStorage.setItem(KEYS.HISTORY, JSON.stringify(history));
+  } catch (e) {
+    console.error('Failed to save cycle history:', e);
+  }
+}
+
+export async function addCycleRecord(record: CycleRecord): Promise<void> {
+  try {
+    const existing = await getCycleHistory();
+    existing.push(record);
+    await saveCycleHistory(existing);
+  } catch (e) {
+    console.error('Failed to add cycle record:', e);
+  }
+}
+
+// Lifetime stats
+
+export async function getLifetimeStats(): Promise<LifetimeStats | null> {
+  try {
+    const raw = await AsyncStorage.getItem(KEYS.LIFETIME);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    console.error('Failed to read lifetime stats:', e);
+    return null;
+  }
+}
+
+export async function saveLifetimeStats(stats: LifetimeStats): Promise<void> {
+  try {
+    await AsyncStorage.setItem(KEYS.LIFETIME, JSON.stringify(stats));
+  } catch (e) {
+    console.error('Failed to save lifetime stats:', e);
+  }
+}
+
 export async function clearAll(): Promise<void> {
   try {
-    await AsyncStorage.multiRemove([KEYS.INCOME, KEYS.PAYMENTS, KEYS.CARDS, KEYS.USER]);
+    await AsyncStorage.multiRemove([
+      KEYS.INCOME, KEYS.PAYMENTS, KEYS.CARDS, KEYS.USER,
+      KEYS.HISTORY, KEYS.LIFETIME,
+    ]);
   } catch (e) {
     console.error('Failed to clear storage:', e);
   }

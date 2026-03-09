@@ -152,6 +152,15 @@ Rules:
 - Defaults: frequency = monthly, next due date = today
 - Validation: amount > 0, name not empty
 
+### Insights Tab
+
+Progress and stats screen. Shows lifetime data and trends.
+
+- **Lifetime Stats (ALL TIME):** Total bills watched (amount, gold), cycles completed, tenure with app. 3-stat row in a surface card.
+- **Streak:** Quiet counter of consecutive cycles without hitting $0. Shows current streak and best. No gamification.
+- **Cycle History Graph (premium-gated):** Line chart of remaining-on-payday over time. Free users see a blurred placeholder with "Upgrade to Premium" CTA.
+- **BNPL Summary:** Only shown if user has BNPL payments. Shows total BNPL commitments, active plan count, and next instalment.
+
 ### Profile / Settings
 
 - Edit income (amount + pay frequency)
