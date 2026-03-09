@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
 import { useRouter, Slot } from 'expo-router';
 import { getUserProfile } from '../utils/storage';
+import { ErrorBoundary } from '../components/ui/ErrorBoundary';
 
 export default function RootLayout() {
   const [showSplash, setShowSplash] = useState(true);
@@ -67,16 +68,18 @@ export default function RootLayout() {
   // Layered approach: Slot renders underneath, splash overlays on top
   // This eliminates the white flash between splash and content
   return (
-    <View style={styles.root}>
-      <Slot />
-      {showSplash && (
-        <Animated.View style={[styles.splash, { opacity: splashOpacity }]} pointerEvents="none">
-          <Animated.Text style={[styles.splashText, { opacity: textOpacity }]}>
-            RE-REMIND
-          </Animated.Text>
-        </Animated.View>
-      )}
-    </View>
+    <ErrorBoundary>
+      <View style={styles.root}>
+        <Slot />
+        {showSplash && (
+          <Animated.View style={[styles.splash, { opacity: splashOpacity }]} pointerEvents="none">
+            <Animated.Text style={[styles.splashText, { opacity: textOpacity }]}>
+              RE-REMIND
+            </Animated.Text>
+          </Animated.View>
+        )}
+      </View>
+    </ErrorBoundary>
   );
 }
 

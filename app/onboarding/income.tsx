@@ -23,6 +23,9 @@ export default function IncomeScreen() {
 
   const handleAmountChange = (text: string) => {
     const cleaned = text.replace(/[^0-9.]/g, '');
+    const parts = cleaned.split('.');
+    if (parts.length > 2) return;
+    if (parts.length === 2 && parts[1].length > 2) return;
     setAmountText(cleaned);
     const num = parseFloat(cleaned);
     if (!isNaN(num)) {
@@ -114,6 +117,7 @@ export default function IncomeScreen() {
             value={income.nextPayday}
             onChange={handlePaydayChange}
             label="NEXT PAYDAY"
+            disablePast
           />
         </View>
       </Animated.View>

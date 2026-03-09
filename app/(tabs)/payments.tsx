@@ -5,7 +5,7 @@ import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../
 import { Payment, PayFrequency } from '../../types/payment';
 import { usePayments } from '../../hooks/usePayments';
 import { formatCurrency } from '../../utils/formatCurrency';
-import { formatRelativeDate } from '../../utils/formatDate';
+import { formatRelativeDate, parseDate } from '../../utils/formatDate';
 import { capitalizeName } from '../../utils/capitalize';
 import { generateId } from '../../utils/generateId';
 import { AddPaymentSheet } from '../../components/payments/AddPaymentSheet';
@@ -92,6 +92,19 @@ export default function PaymentsScreen() {
     }
   };
 
+  // Sort payments: future/today first by soonest, then overdue at bottom
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayStr = today.toISOString().split('T')[0];
+
+  const sortedPayments = [...payments].sort((a, b) => {
+    const aOverdue = a.nextDueDate < todayStr;
+    const bOverdue = b.nextDueDate < todayStr;
+    if (aOverdue && !bOverdue) return 1;
+    if (!aOverdue && bOverdue) return -1;
+    return a.nextDueDate.localeCompare(b.nextDueDate);
+  });
+
   const hasPayments = payments.length > 0;
 
   if (loading) {
@@ -112,12 +125,20 @@ export default function PaymentsScreen() {
 
       {hasPayments ? (
         <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
-          {payments.map((p) => (
-            <Pressable key={p.id} style={styles.card} onPress={() => handleEditPayment(p)}>
+          {sortedPayments.map((p) => {
+            const isOverdue = p.nextDueDate < todayStr;
+            return (
+            <Pressable
+              key={p.id}
+              style={styles.card}
+              onPress={() => handleEditPayment(p)}
+              accessibilityLabel={`${p.name}, ${formatCurrency(p.amount)}, due ${formatRelativeDate(p.nextDueDate)}`}
+              accessibilityRole="button"
+            >
               <View style={styles.cardLeft}>
                 <Text style={styles.cardName}>{capitalizeName(p.name)}</Text>
-                <Text style={styles.cardDetail}>
-                  {frequencyLabel(p.frequency)} · due {formatRelativeDate(p.nextDueDate)}
+                <Text style={[styles.cardDetail, isOverdue && styles.overdueText]}>
+                  {isOverdue ? 'Overdue' : frequencyLabel(p.frequency)} · due {formatRelativeDate(p.nextDueDate)}
                 </Text>
                 <View style={styles.categoryBadge}>
                   <Text style={styles.categoryBadgeText}>
@@ -150,13 +171,16 @@ export default function PaymentsScreen() {
                   <Pressable
                     style={styles.deleteButton}
                     onPress={() => handleDelete(p.id)}
+                    accessibilityLabel={`Remove ${p.name}`}
+                    accessibilityRole="button"
                   >
                     <Text style={styles.deleteText}>×</Text>
                   </Pressable>
                 )}
               </View>
             </Pressable>
-          ))}
+            );
+          })}
           <View style={styles.bottomPad} />
         </ScrollView>
       ) : (
@@ -173,7 +197,12 @@ export default function PaymentsScreen() {
 
       {/* FAB */}
       {hasPayments && (
-        <Pressable style={styles.fab} onPress={handleAddPayment}>
+        <Pressable
+          style={styles.fab}
+          onPress={handleAddPayment}
+          accessibilityLabel="Add payment"
+          accessibilityRole="button"
+        >
           <View style={styles.fabIconContainer}>
             <View style={styles.fabBarHorizontal} />
             <View style={styles.fabBarVertical} />
@@ -282,9 +311,12 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.caption,
     marginTop: 2,
   },
+  overdueText: {
+    color: COLORS.danger,
+  },
   deleteButton: {
-    width: 28,
-    height: 28,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -27,10 +27,10 @@ export default function TabLayout() {
         tabBarIconStyle: { display: 'none' },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'HOME' }} />
-      <Tabs.Screen name="payments" options={{ title: 'PAYMENTS' }} />
-      <Tabs.Screen name="insights" options={{ title: 'INSIGHTS' }} />
-      <Tabs.Screen name="profile" options={{ title: 'PROFILE' }} />
+      <Tabs.Screen name="index" options={{ title: 'HOME', tabBarAccessibilityLabel: 'Home tab' }} />
+      <Tabs.Screen name="payments" options={{ title: 'PAYMENTS', tabBarAccessibilityLabel: 'Payments tab' }} />
+      <Tabs.Screen name="insights" options={{ title: 'INSIGHTS', tabBarAccessibilityLabel: 'Insights tab' }} />
+      <Tabs.Screen name="profile" options={{ title: 'PROFILE', tabBarAccessibilityLabel: 'Profile tab' }} />
     </Tabs>
   );
 }

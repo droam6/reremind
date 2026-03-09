@@ -263,9 +263,10 @@ export function AddPaymentSheet({
               <TextInput
                 style={styles.input}
                 value={name}
-                onChangeText={setName}
+                onChangeText={(t) => setName(t.slice(0, 50))}
                 placeholder="e.g. Rent, Netflix, Afterpay"
                 placeholderTextColor={COLORS.textTertiary}
+                maxLength={50}
               />
 
               {/* Amount */}
@@ -277,7 +278,14 @@ export function AddPaymentSheet({
                 <TextInput
                   style={styles.amountInput}
                   value={amount}
-                  onChangeText={(t) => setAmount(t.replace(/[^0-9.]/g, ''))}
+                  onChangeText={(t) => {
+                    const cleaned = t.replace(/[^0-9.]/g, '');
+                    // Prevent multiple dots and more than 2 decimal places
+                    const parts = cleaned.split('.');
+                    if (parts.length > 2) return;
+                    if (parts.length === 2 && parts[1].length > 2) return;
+                    setAmount(cleaned);
+                  }}
                   keyboardType="numeric"
                   placeholder="0"
                   placeholderTextColor={COLORS.textTertiary}
@@ -354,6 +362,7 @@ export function AddPaymentSheet({
                   value={dueDate}
                   onChange={setDueDate}
                   label="NEXT DUE DATE"
+                  disablePast
                 />
               </View>
 

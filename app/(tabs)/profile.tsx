@@ -263,7 +263,13 @@ export default function ProfileScreen() {
               <TextInput
                 style={styles.amountInput}
                 value={editAmount}
-                onChangeText={(t) => setEditAmount(t.replace(/[^0-9.]/g, ''))}
+                onChangeText={(t) => {
+                  const cleaned = t.replace(/[^0-9.]/g, '');
+                  const parts = cleaned.split('.');
+                  if (parts.length > 2) return;
+                  if (parts.length === 2 && parts[1].length > 2) return;
+                  setEditAmount(cleaned);
+                }}
                 keyboardType="numeric"
                 placeholder="0"
                 placeholderTextColor={COLORS.textTertiary}
@@ -293,6 +299,7 @@ export default function ProfileScreen() {
                 value={editPayday}
                 onChange={setEditPayday}
                 label="NEXT PAYDAY"
+                disablePast
               />
             </View>
 

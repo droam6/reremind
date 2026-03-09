@@ -437,7 +437,11 @@ export default function HomeScreen() {
           trackColor={RING_TRACK_COLOR}
         >
           <Text style={styles.ringLabel}>LEFT AFTER BILLS</Text>
-          <Text style={[styles.ringNumber, { color: healthColor }]}>
+          <Text
+            style={[styles.ringNumber, { color: healthColor }]}
+            accessibilityLabel={`${formatCurrency(cycleData.remainingAfterBills)} left after bills`}
+            accessibilityRole="text"
+          >
             {formatCurrency(cycleData.remainingAfterBills)}
           </Text>
           <Text style={styles.ringSub}>

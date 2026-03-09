@@ -4,7 +4,7 @@ export const COLORS = {
   surfaceLight: '#1E1E1E',
   text: '#FFFFFF',
   textSecondary: '#6B6B6B',
-  textTertiary: '#3A3A3A',
+  textTertiary: '#4A4A4A',
   accent: '#C9A84C',
   accentDim: '#8A7433',
   danger: '#C44A4A',

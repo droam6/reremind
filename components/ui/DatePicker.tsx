@@ -37,11 +37,17 @@ interface DatePickerProps {
   onChange: (isoDate: string) => void;
   label?: string;
   placeholder?: string;
+  disablePast?: boolean;
 }
 
 type DropdownType = 'day' | 'month' | 'year' | null;
 
-export function DatePicker({ value, onChange, label, placeholder }: DatePickerProps) {
+export function DatePicker({ value, onChange, label, placeholder, disablePast = false }: DatePickerProps) {
+  const now = new Date();
+  const todayDay = now.getDate();
+  const todayMonth = now.getMonth() + 1;
+  const todayYear = now.getFullYear();
+
   const parsed = parseValue(value);
   const [day, setDay] = useState<number | null>(parsed.day);
   const [month, setMonth] = useState<number | null>(parsed.month);
@@ -111,13 +117,16 @@ export function DatePicker({ value, onChange, label, placeholder }: DatePickerPr
           {openDropdown === 'day' && (
             <View style={styles.dropdown}>
               <ScrollView style={styles.dropdownScroll} nestedScrollEnabled>
-                {days.map((d) => (
-                  <Pressable key={d} style={styles.dropdownItem} onPress={() => handleDaySelect(d)}>
-                    <Text style={[styles.dropdownItemText, d === day && styles.dropdownItemSelected]}>
+                {days.map((d) => {
+                  const isPast = disablePast && year === todayYear && month === todayMonth && d < todayDay;
+                  return (
+                  <Pressable key={d} style={styles.dropdownItem} onPress={() => !isPast && handleDaySelect(d)} disabled={isPast}>
+                    <Text style={[styles.dropdownItemText, d === day && styles.dropdownItemSelected, isPast && styles.dropdownItemDisabled]}>
                       {d}
                     </Text>
                   </Pressable>
-                ))}
+                  );
+                })}
               </ScrollView>
             </View>
           )}
@@ -136,13 +145,17 @@ export function DatePicker({ value, onChange, label, placeholder }: DatePickerPr
           {openDropdown === 'month' && (
             <View style={styles.dropdown}>
               <ScrollView style={styles.dropdownScroll} nestedScrollEnabled>
-                {MONTHS.map((m, i) => (
-                  <Pressable key={m} style={styles.dropdownItem} onPress={() => handleMonthSelect(i + 1)}>
-                    <Text style={[styles.dropdownItemText, (i + 1) === month && styles.dropdownItemSelected]}>
+                {MONTHS.map((m, i) => {
+                  const monthNum = i + 1;
+                  const isPast = disablePast && year === todayYear && monthNum < todayMonth;
+                  return (
+                  <Pressable key={m} style={styles.dropdownItem} onPress={() => !isPast && handleMonthSelect(monthNum)} disabled={isPast}>
+                    <Text style={[styles.dropdownItemText, monthNum === month && styles.dropdownItemSelected, isPast && styles.dropdownItemDisabled]}>
                       {m}
                     </Text>
                   </Pressable>
-                ))}
+                  );
+                })}
               </ScrollView>
             </View>
           )}
@@ -161,13 +174,16 @@ export function DatePicker({ value, onChange, label, placeholder }: DatePickerPr
           {openDropdown === 'year' && (
             <View style={styles.dropdown}>
               <ScrollView style={styles.dropdownScroll} nestedScrollEnabled>
-                {YEARS.map((y) => (
-                  <Pressable key={y} style={styles.dropdownItem} onPress={() => handleYearSelect(y)}>
-                    <Text style={[styles.dropdownItemText, y === year && styles.dropdownItemSelected]}>
+                {YEARS.map((y) => {
+                  const isPast = disablePast && y < todayYear;
+                  return (
+                  <Pressable key={y} style={styles.dropdownItem} onPress={() => !isPast && handleYearSelect(y)} disabled={isPast}>
+                    <Text style={[styles.dropdownItemText, y === year && styles.dropdownItemSelected, isPast && styles.dropdownItemDisabled]}>
                       {y}
                     </Text>
                   </Pressable>
-                ))}
+                  );
+                })}
               </ScrollView>
             </View>
           )}
@@ -248,5 +264,9 @@ const styles = StyleSheet.create({
   dropdownItemSelected: {
     color: COLORS.accent,
     fontWeight: FONT_WEIGHTS.bold,
+  },
+  dropdownItemDisabled: {
+    color: COLORS.textTertiary,
+    opacity: 0.4,
   },
 });
