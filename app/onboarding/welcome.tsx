@@ -1,30 +1,55 @@
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
+import { useSlideUp, useFadeIn } from '../../utils/animations';
 
 export default function WelcomeScreen() {
   const router = useRouter();
+
+  const title = useSlideUp(200, 600, 20);
+  const tagline = useSlideUp(500, 600, 20);
+  const subtitle = useSlideUp(700, 600, 20);
+  const buttonOpacity = useFadeIn(1000, 500);
 
   return (
     <View style={styles.container}>
       <View style={styles.spacer} />
 
       <View style={styles.center}>
-        <Text style={styles.title}>RE-REMIND</Text>
-        <Text style={styles.tagline}>Stop guessing. Start knowing.</Text>
-        <Text style={styles.subtitle}>
+        <Animated.Text
+          style={[
+            styles.title,
+            { opacity: title.opacity, transform: [{ translateY: title.translateY }] },
+          ]}
+        >
+          RE-REMIND
+        </Animated.Text>
+        <Animated.Text
+          style={[
+            styles.tagline,
+            { opacity: tagline.opacity, transform: [{ translateY: tagline.translateY }] },
+          ]}
+        >
+          Stop guessing. Start knowing.
+        </Animated.Text>
+        <Animated.Text
+          style={[
+            styles.subtitle,
+            { opacity: subtitle.opacity, transform: [{ translateY: subtitle.translateY }] },
+          ]}
+        >
           See what's left after your bills — every day.
-        </Text>
+        </Animated.Text>
       </View>
 
-      <View style={styles.bottom}>
+      <Animated.View style={[styles.bottom, { opacity: buttonOpacity }]}>
         <Pressable
           style={styles.button}
           onPress={() => router.push('/onboarding/questions')}
         >
-          <Text style={styles.buttonText}>GET STARTED</Text>
+          <Animated.Text style={styles.buttonText}>GET STARTED</Animated.Text>
         </Pressable>
-      </View>
+      </Animated.View>
     </View>
   );
 }

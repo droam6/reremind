@@ -1,5 +1,5 @@
 import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Animated, Easing } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
@@ -147,6 +147,34 @@ export default function HomeScreen() {
       reloadIncome();
     })();
   }, [income, cycleData, history, payments, addRecord, incrementCyclesCompleted, updateStreak, reloadIncome]);
+
+  // First-mount staggered animations (only on initial mount, not tab switches)
+  const isFirstMount = useRef(true);
+  const heroOpacity = useRef(new Animated.Value(0)).current;
+  const badgeOpacity = useRef(new Animated.Value(0)).current;
+  const calendarOpacity = useRef(new Animated.Value(0)).current;
+  const contentOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!isFirstMount.current) return;
+    isFirstMount.current = false;
+    const easeOut = Easing.out(Easing.cubic);
+
+    Animated.stagger(100, [
+      Animated.timing(heroOpacity, {
+        toValue: 1, duration: 500, easing: easeOut, useNativeDriver: true,
+      }),
+      Animated.timing(badgeOpacity, {
+        toValue: 1, duration: 400, easing: easeOut, useNativeDriver: true,
+      }),
+      Animated.timing(calendarOpacity, {
+        toValue: 1, duration: 400, easing: easeOut, useNativeDriver: true,
+      }),
+      Animated.timing(contentOpacity, {
+        toValue: 1, duration: 400, easing: easeOut, useNativeDriver: true,
+      }),
+    ]).start();
+  }, [heroOpacity, badgeOpacity, calendarOpacity, contentOpacity]);
 
   const todayStr = new Date().toISOString().split('T')[0];
 
@@ -305,7 +333,7 @@ export default function HomeScreen() {
       </View>
 
       {/* 2. Progress Ring with safe badge */}
-      <View style={styles.heroZone}>
+      <Animated.View style={[styles.heroZone, { opacity: heroOpacity }]}>
         <ProgressRing
           progress={ringProgress}
           size={240}
@@ -321,14 +349,14 @@ export default function HomeScreen() {
           <Text style={styles.ringSub}>
             {formatCountdown(cycleData.daysUntilPayday)}
           </Text>
-          <Text style={[styles.statusBadge, { color: statusBadge.color }]}>
+          <Animated.Text style={[styles.statusBadge, { color: statusBadge.color, opacity: badgeOpacity }]}>
             {statusBadge.label}
-          </Text>
+          </Animated.Text>
         </ProgressRing>
-      </View>
+      </Animated.View>
 
       {/* 3. 7-Day Calendar Strip */}
-      <View style={styles.calendarStrip}>
+      <Animated.View style={[styles.calendarStrip, { opacity: calendarOpacity }]}>
         {calendarDays.map((day) => {
           const dayInfo = dayPaymentMap.get(day.dateStr);
           const dotColor = getDotColor(dayInfo?.payments.length ?? 0);
@@ -355,7 +383,7 @@ export default function HomeScreen() {
             </Pressable>
           );
         })}
-      </View>
+      </Animated.View>
 
       {/* Expanded day detail */}
       {expandedDayInfo && expandedDayInfo.payments.length > 0 && (
@@ -368,6 +396,9 @@ export default function HomeScreen() {
           ))}
         </View>
       )}
+
+      {/* Everything below fades in together */}
+      <Animated.View style={{ opacity: contentOpacity }}>
 
       {/* 4. Danger Days Heat Map */}
       <View style={styles.section}>
@@ -526,6 +557,8 @@ export default function HomeScreen() {
           </View>
         )}
       </View>
+
+      </Animated.View>
 
       {/* 10. Bottom padding */}
       <View style={styles.bottomPad} />

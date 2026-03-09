@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Pressable } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Pressable, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
 import { IncomeFrequency } from '../../types/income';
 import { useOnboarding } from './OnboardingContext';
+import { useFadeIn, useProgressWidth } from '../../utils/animations';
 
 const FREQUENCIES: { label: string; value: IncomeFrequency }[] = [
   { label: 'Weekly', value: 'weekly' },
@@ -38,6 +39,9 @@ export default function IncomeScreen() {
   const [amountText, setAmountText] = useState(income.amount > 0 ? String(income.amount) : '');
   const [paydayText, setPaydayText] = useState(formatPaydayDisplay(income.nextPayday));
 
+  const contentOpacity = useFadeIn(200, 400);
+  const progressWidth = useProgressWidth(40, 500, 200);
+
   const handleAmountChange = (text: string) => {
     const cleaned = text.replace(/[^0-9.]/g, '');
     setAmountText(cleaned);
@@ -59,24 +63,32 @@ export default function IncomeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Progress bar */}
+      {/* Animated progress bar */}
       <View style={styles.progressTrack}>
-        <View style={[styles.progressFill, { width: '40%' }]} />
+        <Animated.View
+          style={[
+            styles.progressFill,
+            { width: progressWidth.interpolate({
+                inputRange: [0, 100],
+                outputRange: ['0%', '100%'],
+              }),
+            },
+          ]}
+        />
       </View>
 
       {/* Back button */}
       <Pressable style={styles.backButton} onPress={() => router.back()}>
-        <Text style={styles.backText}>←</Text>
+        <Text style={styles.backText}>&#8592;</Text>
       </Pressable>
 
-      {/* Content */}
-      <View style={styles.content}>
+      {/* Content with fade in */}
+      <Animated.View style={[styles.content, { opacity: contentOpacity }]}>
         <Text style={styles.heading}>How much do you take home?</Text>
         <Text style={styles.subheading}>
           After tax. The amount that hits your account.
         </Text>
 
-        {/* Amount input */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>AMOUNT</Text>
           <View style={styles.amountContainer}>
@@ -92,7 +104,6 @@ export default function IncomeScreen() {
           </View>
         </View>
 
-        {/* Frequency selector */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>HOW OFTEN?</Text>
           <View style={styles.frequencyRow}>
@@ -121,7 +132,6 @@ export default function IncomeScreen() {
           </View>
         </View>
 
-        {/* Next payday input */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>NEXT PAYDAY</Text>
           <TextInput
@@ -132,10 +142,10 @@ export default function IncomeScreen() {
             placeholderTextColor={COLORS.textTertiary}
           />
         </View>
-      </View>
+      </Animated.View>
 
       {/* Bottom button */}
-      <View style={styles.bottom}>
+      <Animated.View style={[styles.bottom, { opacity: contentOpacity }]}>
         <Pressable
           style={[styles.button, !canProceed && styles.buttonDisabled]}
           onPress={() => canProceed && router.push('/onboarding/add-payments')}
@@ -143,7 +153,7 @@ export default function IncomeScreen() {
         >
           <Text style={styles.buttonText}>NEXT</Text>
         </Pressable>
-      </View>
+      </Animated.View>
     </View>
   );
 }

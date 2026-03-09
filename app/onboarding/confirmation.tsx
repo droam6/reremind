@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
 import { useOnboarding } from './OnboardingContext';
@@ -9,6 +9,7 @@ import { formatCurrency } from '../../utils/formatCurrency';
 import { formatRelativeDate } from '../../utils/formatDate';
 import { savePayments } from '../../utils/storage';
 import { Income } from '../../types/income';
+import { useSlideUp, useFadeIn } from '../../utils/animations';
 
 function getFrequencyLabel(freq: string): string {
   switch (freq) {
@@ -37,6 +38,11 @@ export default function ConfirmationScreen() {
 
   const totalCommitted = payments.reduce((sum, p) => sum + p.amount, 0);
   const remaining = Math.max(0, onboardingIncome.amount - totalCommitted);
+
+  // Animations
+  const card = useSlideUp(200, 500, 20);
+  const heroOpacity = useFadeIn(500, 600);
+  const buttonOpacity = useFadeIn(800, 500);
 
   const handleFinish = async () => {
     const nextPayday = onboardingIncome.nextPayday || (() => {
@@ -67,62 +73,69 @@ export default function ConfirmationScreen() {
 
       {/* Content */}
       <View style={styles.content}>
-        <Text style={styles.heading}>You're all set.</Text>
-        <Text style={styles.subheading}>
-          Here's what we're watching for you.
-        </Text>
+        <Animated.View
+          style={{
+            opacity: card.opacity,
+            transform: [{ translateY: card.translateY }],
+          }}
+        >
+          <Text style={styles.heading}>You're all set.</Text>
+          <Text style={styles.subheading}>
+            Here's what we're watching for you.
+          </Text>
 
-        {/* Summary card */}
-        <View style={styles.card}>
-          <View style={styles.cardRow}>
-            <Text style={styles.cardLabel}>Take-home pay</Text>
-            <Text style={styles.cardValueBold}>
-              {formatCurrency(onboardingIncome.amount)}
-            </Text>
-          </View>
-          <View style={styles.cardRow}>
-            <Text style={styles.cardLabel}>Pay frequency</Text>
-            <Text style={styles.cardValue}>
-              {getFrequencyLabel(onboardingIncome.frequency)}
-            </Text>
-          </View>
-          {onboardingIncome.nextPayday ? (
+          {/* Summary card */}
+          <View style={styles.card}>
             <View style={styles.cardRow}>
-              <Text style={styles.cardLabel}>Next payday</Text>
-              <Text style={styles.cardValue}>
-                {formatRelativeDate(onboardingIncome.nextPayday)}
+              <Text style={styles.cardLabel}>Take-home pay</Text>
+              <Text style={styles.cardValueBold}>
+                {formatCurrency(onboardingIncome.amount)}
               </Text>
             </View>
-          ) : null}
-          <View style={styles.cardSeparator} />
-          <View style={styles.cardRow}>
-            <Text style={styles.cardLabel}>Payments tracked</Text>
-            <Text style={styles.cardValue}>{payments.length}</Text>
+            <View style={styles.cardRow}>
+              <Text style={styles.cardLabel}>Pay frequency</Text>
+              <Text style={styles.cardValue}>
+                {getFrequencyLabel(onboardingIncome.frequency)}
+              </Text>
+            </View>
+            {onboardingIncome.nextPayday ? (
+              <View style={styles.cardRow}>
+                <Text style={styles.cardLabel}>Next payday</Text>
+                <Text style={styles.cardValue}>
+                  {formatRelativeDate(onboardingIncome.nextPayday)}
+                </Text>
+              </View>
+            ) : null}
+            <View style={styles.cardSeparator} />
+            <View style={styles.cardRow}>
+              <Text style={styles.cardLabel}>Payments tracked</Text>
+              <Text style={styles.cardValue}>{payments.length}</Text>
+            </View>
+            <View style={styles.cardRow}>
+              <Text style={styles.cardLabel}>Total committed</Text>
+              <Text style={styles.cardValueBold}>
+                {formatCurrency(totalCommitted)}
+              </Text>
+            </View>
           </View>
-          <View style={styles.cardRow}>
-            <Text style={styles.cardLabel}>Total committed</Text>
-            <Text style={styles.cardValueBold}>
-              {formatCurrency(totalCommitted)}
-            </Text>
-          </View>
-        </View>
+        </Animated.View>
 
         {/* Hero preview */}
         {payments.length > 0 && (
-          <View style={styles.heroPreview}>
+          <Animated.View style={[styles.heroPreview, { opacity: heroOpacity }]}>
             <Text style={styles.heroLabel}>LEFT AFTER BILLS</Text>
             <Text style={styles.heroNumber}>{formatCurrency(remaining)}</Text>
             <Text style={styles.heroSub}>after your first pay cycle</Text>
-          </View>
+          </Animated.View>
         )}
       </View>
 
       {/* Bottom button */}
-      <View style={styles.bottom}>
+      <Animated.View style={[styles.bottom, { opacity: buttonOpacity }]}>
         <Pressable style={styles.button} onPress={handleFinish}>
           <Text style={styles.buttonText}>LET'S GO</Text>
         </Pressable>
-      </View>
+      </Animated.View>
     </View>
   );
 }

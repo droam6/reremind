@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Pressable, Animated } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Animated, Easing } from 'react-native';
 import { useRouter } from 'expo-router';
 import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
 
@@ -38,30 +38,95 @@ export default function QuestionsScreen() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [showSummary, setShowSummary] = useState(false);
   const [showButton, setShowButton] = useState(false);
+
+  // Crossfade animations for questions
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  // Summary animations
+  const summaryScale = useRef(new Animated.Value(0.95)).current;
+  const summaryOpacity = useRef(new Animated.Value(0)).current;
   const buttonOpacity = useRef(new Animated.Value(0)).current;
 
   const handleSelect = (index: number) => {
     if (selectedIndex !== null) return;
     setSelectedIndex(index);
 
+    // After 400ms, crossfade to next
     setTimeout(() => {
       if (currentQuestion < QUESTIONS.length - 1) {
-        setCurrentQuestion((prev) => prev + 1);
-        setSelectedIndex(null);
+        // Slide out left
+        Animated.parallel([
+          Animated.timing(fadeAnim, {
+            toValue: 0,
+            duration: 300,
+            easing: Easing.in(Easing.cubic),
+            useNativeDriver: true,
+          }),
+          Animated.timing(slideAnim, {
+            toValue: -30,
+            duration: 300,
+            easing: Easing.in(Easing.cubic),
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          setCurrentQuestion((prev) => prev + 1);
+          setSelectedIndex(null);
+          // Reset to right side
+          slideAnim.setValue(30);
+          // Slide in from right
+          Animated.parallel([
+            Animated.timing(fadeAnim, {
+              toValue: 1,
+              duration: 300,
+              easing: Easing.out(Easing.cubic),
+              useNativeDriver: true,
+            }),
+            Animated.timing(slideAnim, {
+              toValue: 0,
+              duration: 300,
+              easing: Easing.out(Easing.cubic),
+              useNativeDriver: true,
+            }),
+          ]).start();
+        });
       } else {
         setShowSummary(true);
-        setTimeout(() => {
-          setShowButton(true);
-        }, 2000);
       }
-    }, 500);
+    }, 400);
   };
 
+  // Summary reveal animation
+  useEffect(() => {
+    if (showSummary) {
+      Animated.parallel([
+        Animated.timing(summaryOpacity, {
+          toValue: 1,
+          duration: 600,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(summaryScale, {
+          toValue: 1,
+          duration: 600,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      setTimeout(() => {
+        setShowButton(true);
+      }, 2000);
+    }
+  }, [showSummary, summaryOpacity, summaryScale]);
+
+  // Button fade in
   useEffect(() => {
     if (showButton) {
       Animated.timing(buttonOpacity, {
         toValue: 1,
-        duration: 400,
+        duration: 500,
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }).start();
     }
@@ -70,17 +135,24 @@ export default function QuestionsScreen() {
   if (showSummary) {
     return (
       <View style={styles.container}>
-        {/* Progress bar */}
         <View style={styles.progressTrack}>
           <View style={[styles.progressFill, { width: '20%' }]} />
         </View>
 
-        <View style={styles.summaryCenter}>
+        <Animated.View
+          style={[
+            styles.summaryCenter,
+            {
+              opacity: summaryOpacity,
+              transform: [{ scale: summaryScale }],
+            },
+          ]}
+        >
           <Text style={styles.summaryTitle}>You're not alone.</Text>
           <Text style={styles.summaryBody}>
             RE-REMIND shows you exactly what's left after your bills — so you never have to guess.
           </Text>
-        </View>
+        </Animated.View>
 
         {showButton && (
           <Animated.View style={[styles.bottom, { opacity: buttonOpacity }]}>
@@ -100,12 +172,19 @@ export default function QuestionsScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Progress bar */}
       <View style={styles.progressTrack}>
         <View style={[styles.progressFill, { width: '20%' }]} />
       </View>
 
-      <View style={styles.content}>
+      <Animated.View
+        style={[
+          styles.content,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateX: slideAnim }],
+          },
+        ]}
+      >
         <Text style={styles.questionText}>{question.text}</Text>
 
         <View style={styles.optionsContainer}>
@@ -133,7 +212,7 @@ export default function QuestionsScreen() {
             );
           })}
         </View>
-      </View>
+      </Animated.View>
     </View>
   );
 }

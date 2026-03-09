@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
 import { Payment } from '../../types/payment';
@@ -9,12 +9,16 @@ import { useOnboarding } from './OnboardingContext';
 import { AddPaymentSheet } from '../../components/payments/AddPaymentSheet';
 import { PremiumGate } from '../../components/ui/PremiumGate';
 import { FREE_LIMITS } from '../../constants/limits';
+import { useFadeIn, useProgressWidth } from '../../utils/animations';
 
 export default function AddPaymentsScreen() {
   const router = useRouter();
   const { payments, addPayment, removePayment } = useOnboarding();
   const [showSheet, setShowSheet] = useState(false);
   const [showPremiumGate, setShowPremiumGate] = useState(false);
+
+  const contentOpacity = useFadeIn(200, 400);
+  const progressWidth = useProgressWidth(60, 500, 200);
 
   const handleSave = (data: Omit<Payment, 'id' | 'createdAt'>) => {
     const payment: Payment = {
@@ -37,53 +41,62 @@ export default function AddPaymentsScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Progress bar */}
+      {/* Animated progress bar */}
       <View style={styles.progressTrack}>
-        <View style={[styles.progressFill, { width: '60%' }]} />
+        <Animated.View
+          style={[
+            styles.progressFill,
+            { width: progressWidth.interpolate({
+                inputRange: [0, 100],
+                outputRange: ['0%', '100%'],
+              }),
+            },
+          ]}
+        />
       </View>
 
       {/* Back button */}
       <Pressable style={styles.backButton} onPress={() => router.back()}>
-        <Text style={styles.backText}>←</Text>
+        <Text style={styles.backText}>&#8592;</Text>
       </Pressable>
 
-      {/* Content */}
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentInner}>
-        <Text style={styles.heading}>What's coming out of your account?</Text>
-        <Text style={styles.subheading}>
-          Bills, subscriptions, BNPL — anything that repeats.
-        </Text>
+      {/* Content with fade in */}
+      <Animated.View style={[{ flex: 1 }, { opacity: contentOpacity }]}>
+        <ScrollView style={styles.content} contentContainerStyle={styles.contentInner}>
+          <Text style={styles.heading}>What's coming out of your account?</Text>
+          <Text style={styles.subheading}>
+            Bills, subscriptions, BNPL — anything that repeats.
+          </Text>
 
-        {/* Payment list */}
-        {hasPayments ? (
-          <View style={styles.paymentList}>
-            {payments.map((p) => (
-              <View key={p.id} style={styles.paymentRow}>
-                <View style={styles.paymentInfo}>
-                  <Text style={styles.paymentName}>{p.name}</Text>
-                  <Text style={styles.paymentAmount}>{formatCurrency(p.amount)}</Text>
+          {hasPayments ? (
+            <View style={styles.paymentList}>
+              {payments.map((p) => (
+                <View key={p.id} style={styles.paymentRow}>
+                  <View style={styles.paymentInfo}>
+                    <Text style={styles.paymentName}>{p.name}</Text>
+                    <Text style={styles.paymentAmount}>{formatCurrency(p.amount)}</Text>
+                  </View>
+                  <Pressable
+                    style={styles.removeButton}
+                    onPress={() => removePayment(p.id)}
+                  >
+                    <Text style={styles.removeText}>×</Text>
+                  </Pressable>
                 </View>
-                <Pressable
-                  style={styles.removeButton}
-                  onPress={() => removePayment(p.id)}
-                >
-                  <Text style={styles.removeText}>×</Text>
-                </Pressable>
-              </View>
-            ))}
-          </View>
-        ) : (
-          <Text style={styles.emptyText}>No payments added yet</Text>
-        )}
+              ))}
+            </View>
+          ) : (
+            <Text style={styles.emptyText}>No payments added yet</Text>
+          )}
 
-        {/* Add payment button */}
-        <Pressable style={styles.addButton} onPress={handleAddPayment}>
-          <Text style={styles.addButtonText}>+ Add payment</Text>
-        </Pressable>
-      </ScrollView>
+          <Pressable style={styles.addButton} onPress={handleAddPayment}>
+            <Text style={styles.addButtonText}>+ Add payment</Text>
+          </Pressable>
+        </ScrollView>
+      </Animated.View>
 
       {/* Bottom button */}
-      <View style={styles.bottom}>
+      <Animated.View style={[styles.bottom, { opacity: contentOpacity }]}>
         <Pressable
           style={styles.button}
           onPress={() => router.push('/onboarding/confirmation')}
@@ -92,7 +105,7 @@ export default function AddPaymentsScreen() {
             {hasPayments ? 'NEXT' : 'SKIP FOR NOW'}
           </Text>
         </Pressable>
-      </View>
+      </Animated.View>
 
       <AddPaymentSheet
         visible={showSheet}
