@@ -10,6 +10,7 @@ interface ProgressRingProps {
   strokeWidth: number;
   color: string;
   trackColor: string;
+  trackStrokeWidth?: number;
   animated?: boolean;
   children?: ReactNode;
 }
@@ -20,6 +21,7 @@ export function ProgressRing({
   strokeWidth,
   color,
   trackColor,
+  trackStrokeWidth,
   animated = true,
   children,
 }: ProgressRingProps) {
@@ -55,7 +57,7 @@ export function ProgressRing({
           cy={center}
           r={radius}
           stroke={trackColor}
-          strokeWidth={strokeWidth}
+          strokeWidth={trackStrokeWidth ?? strokeWidth}
           fill="none"
         />
         {/* Progress circle */}

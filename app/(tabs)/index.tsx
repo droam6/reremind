@@ -15,6 +15,8 @@ const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+const RING_TRACK_COLOR = '#1A1A1A';
+
 function formatHeaderDate(): string {
   const now = new Date();
   return `${DAY_NAMES[now.getDay()]} ${now.getDate()} ${MONTH_NAMES[now.getMonth()]}`;
@@ -33,6 +35,18 @@ function getDotColor(count: number): string | null {
   if (count === 1) return COLORS.accent;
   if (count === 2) return COLORS.warning;
   return COLORS.danger;
+}
+
+function plural(count: number, word: string): string {
+  return count === 1 ? word : `${word}s`;
+}
+
+function daysFromToday(dateStr: string): number {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(dateStr);
+  target.setHours(0, 0, 0, 0);
+  return Math.round((target.getTime() - today.getTime()) / 86400000);
 }
 
 export default function HomeScreen() {
@@ -85,8 +99,9 @@ export default function HomeScreen() {
             progress={1}
             size={240}
             strokeWidth={10}
+            trackStrokeWidth={8}
             color={COLORS.accent}
-            trackColor={COLORS.surfaceLight}
+            trackColor={RING_TRACK_COLOR}
           >
             <Text style={styles.ringLabel}>LEFT AFTER BILLS</Text>
             <Text style={[styles.ringNumber, { color: COLORS.accent }]}>
@@ -138,6 +153,12 @@ export default function HomeScreen() {
   const weekTotal = getWeekTotal(payments);
   const busiest = getBusiestDay(payments);
 
+  // FIX 6: Smarter third stat
+  const hasCluster = busiest.count >= 2;
+  const busiestDayName = busiest.date
+    ? DAY_NAMES[new Date(busiest.date).getDay()]
+    : '';
+
   // Next payment
   const nextPayment = cycleData.upcomingPayments[0] ?? null;
   const nextPaymentCluster = nextPayment
@@ -148,7 +169,10 @@ export default function HomeScreen() {
     nextPayment.nextDueDate === new Date(today.getTime() + 86400000).toISOString().split('T')[0]
   );
 
-  // Coming up (skip first if it's the next payment card)
+  // Days until next payment (for FIX 6 fallback)
+  const daysToNext = nextPayment ? daysFromToday(nextPayment.nextDueDate) : null;
+
+  // Coming up (skip first since it's shown in next payment card)
   const comingUp = cycleData.upcomingPayments.slice(1, 4);
 
   // Largest payment
@@ -167,8 +191,9 @@ export default function HomeScreen() {
           progress={ringProgress}
           size={240}
           strokeWidth={10}
+          trackStrokeWidth={8}
           color={healthColor}
-          trackColor={COLORS.surfaceLight}
+          trackColor={RING_TRACK_COLOR}
         >
           <Text style={styles.ringLabel}>LEFT AFTER BILLS</Text>
           <Text style={[styles.ringNumber, { color: healthColor }]}>
@@ -235,7 +260,7 @@ export default function HomeScreen() {
                 {nextPaymentCluster ? (
                   <>
                     <Text style={styles.nextPaymentName}>
-                      {nextPaymentCluster.payments.length} payments
+                      {nextPaymentCluster.payments.length} {plural(nextPaymentCluster.payments.length, 'payment')}
                     </Text>
                     <Text style={styles.nextPaymentDate}>
                       {formatCurrency(nextPaymentCluster.total)} hitting {formatRelativeDate(nextPaymentCluster.date)}
@@ -265,20 +290,28 @@ export default function HomeScreen() {
           <View style={styles.weekCard}>
             <View style={styles.weekStat}>
               <Text style={styles.weekStatNumber}>{weekPaymentCount}</Text>
-              <Text style={styles.weekStatLabel}>payments</Text>
+              <Text style={styles.weekStatLabel}>{plural(weekPaymentCount, 'payment')}</Text>
             </View>
             <View style={styles.weekStat}>
               <Text style={styles.weekStatNumber}>{formatCurrency(weekTotal)}</Text>
               <Text style={styles.weekStatLabel}>due</Text>
             </View>
             <View style={styles.weekStat}>
-              <Text style={[
-                styles.weekStatNumber,
-                busiest.count > 1 && { color: COLORS.warning },
-              ]}>
-                {busiest.count}
-              </Text>
-              <Text style={styles.weekStatLabel}>busiest day</Text>
+              {hasCluster ? (
+                <>
+                  <Text style={[styles.weekStatNumber, { color: COLORS.warning }]}>
+                    {busiest.count} on {busiestDayName}
+                  </Text>
+                  <Text style={styles.weekStatLabel}>busiest day</Text>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.weekStatNumber}>
+                    {daysToNext !== null ? `${daysToNext} ${plural(daysToNext, 'day')}` : '--'}
+                  </Text>
+                  <Text style={styles.weekStatLabel}>next payment</Text>
+                </>
+              )}
             </View>
           </View>
         </View>
@@ -350,6 +383,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.md,
   },
   loadingText: {
     color: COLORS.textSecondary,
@@ -384,7 +418,6 @@ const styles = StyleSheet.create({
     marginTop: SPACING.md,
   },
   header: {
-    paddingTop: SPACING.xxxl,
     paddingBottom: SPACING.sm,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -437,7 +470,7 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     fontWeight: FONT_WEIGHTS.medium,
-    marginBottom: SPACING.xs,
+    marginBottom: 4,
   },
   calendarDateNumToday: {
     color: COLORS.text,
@@ -454,6 +487,7 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
+    marginTop: 4,
   },
 
   // Expanded day
@@ -479,9 +513,9 @@ const styles = StyleSheet.create({
     fontWeight: FONT_WEIGHTS.bold,
   },
 
-  // Next payment
+  // Sections
   section: {
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.lg,
   },
   sectionHeader: {
     color: COLORS.textSecondary,
@@ -490,6 +524,8 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     marginBottom: SPACING.md,
   },
+
+  // Next payment card
   nextPaymentCard: {
     backgroundColor: COLORS.surface,
     borderRadius: 0,
@@ -507,7 +543,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: SPACING.lg,
+    padding: 20,
   },
   nextPaymentLeft: {
     flex: 1,
