@@ -191,6 +191,43 @@ Edge cases:
 - Negative result → show $0 with gentle warning, never a negative number
 - Mid-cycle payment added → recalculate immediately
 
+### Bill Splitting (Premium)
+
+Payments can optionally be split between people. When `isSplit` is true on a Payment:
+- `fullAmount` stores the total bill (e.g., $1,800 rent)
+- `splitCount` stores how many people share it (e.g., 3)
+- `amount` stores the user's share (`fullAmount / splitCount`, rounded to 2 decimals)
+- Payment cards display the user's share as the main amount, with "1/X of $fullAmount" caption below
+
+In AddPaymentSheet, when split is toggled ON:
+- The Amount input becomes the FULL amount
+- "Your share: $X" is calculated and displayed in real time
+- Free users see PremiumGate when tapping the split toggle
+
+### Cycle End Detection
+
+The dashboard automatically detects when a pay cycle ends (today >= nextPayday):
+1. Creates a `CycleRecord` with the current cycle's data (remaining, committed, coverage)
+2. Increments `cyclesCompleted` in lifetime stats
+3. Updates the streak (based on whether remainingAfterBills > 0)
+4. Auto-advances `nextPayday` by one frequency period and saves to storage
+5. Prevents duplicate recording by checking if the most recent record matches the current payday
+
+This feeds the Insights tab's cycle history graph automatically.
+
+### Premium vs Free Features
+
+**Free tier:**
+- Up to 5 payments, 2 cards
+- Dashboard with ring, calendar, heat map, stats, upcoming list
+- Insights: lifetime stats, streak, BNPL summary
+
+**Premium tier ($4.99/month):**
+- Unlimited payments and cards
+- What If simulator
+- Bill splitting
+- Cycle history graph (insights)
+
 ---
 
 ## Code Standards

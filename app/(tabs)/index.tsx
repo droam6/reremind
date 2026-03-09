@@ -1,4 +1,4 @@
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -6,9 +6,14 @@ import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../
 import { useIncome } from '../../hooks/useIncome';
 import { usePayments } from '../../hooks/usePayments';
 import { useCycleData } from '../../hooks/useCycleData';
+import { useCycleHistory } from '../../hooks/useCycleHistory';
+import { useLifetimeStats } from '../../hooks/useLifetimeStats';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatRelativeDate, formatCountdown, parseDate } from '../../utils/formatDate';
+import { capitalizeName } from '../../utils/capitalize';
 import { getDayPayments, getWeekPayments, getWeekTotal, getBusiestDay, DayPaymentInfo } from '../../utils/calculations';
+import { generateId } from '../../utils/generateId';
+import { saveIncome } from '../../utils/storage';
 import { ProgressRing } from '../../components/dashboard/ProgressRing';
 import { WhatIfSimulator } from '../../components/dashboard/WhatIfSimulator';
 
@@ -78,14 +83,70 @@ export default function HomeScreen() {
   const { payments, loading: paymentsLoading, reload: reloadPayments } = usePayments();
   const cycleData = useCycleData(income, payments);
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
+  const { history, addRecord, reload: reloadHistory } = useCycleHistory();
+  const { incrementCyclesCompleted, updateStreak, reload: reloadStats } = useLifetimeStats();
+  const cycleRecordedRef = useRef(false);
 
   useFocusEffect(
     useCallback(() => {
       reloadIncome();
       reloadPayments();
+      reloadHistory();
+      reloadStats();
       setExpandedDay(null);
-    }, [reloadIncome, reloadPayments])
+    }, [reloadIncome, reloadPayments, reloadHistory, reloadStats])
   );
+
+  // Cycle end detection — record completed cycles automatically
+  useEffect(() => {
+    if (!income || !cycleData || cycleRecordedRef.current) return;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const nextPayday = parseDate(income.nextPayday);
+
+    // Check if payday has arrived (today >= nextPayday)
+    if (today.getTime() < nextPayday.getTime()) return;
+
+    // Check if we already recorded this cycle
+    const endDateStr = income.nextPayday;
+    const alreadyRecorded = history.some((r) => r.cycleEndDate === endDateStr);
+    if (alreadyRecorded) return;
+
+    cycleRecordedRef.current = true;
+
+    // Record the cycle
+    const record = {
+      id: generateId(),
+      cycleEndDate: endDateStr,
+      incomeAmount: income.amount,
+      totalCommitted: cycleData.totalCommitted,
+      remainingOnPayday: cycleData.remainingAfterBills,
+      paymentsCovered: cycleData.cycleOccurrences.length,
+      totalPayments: payments.length,
+      createdAt: new Date().toISOString(),
+    };
+
+    (async () => {
+      await addRecord(record);
+      await incrementCyclesCompleted();
+      await updateStreak(cycleData.remainingAfterBills);
+
+      // Auto-advance payday
+      const cycleDaysMap: Record<string, number> = {
+        weekly: 7, fortnightly: 14, monthly: 30,
+      };
+      const days = cycleDaysMap[income.frequency] ?? 30;
+      const newPayday = new Date(nextPayday);
+      newPayday.setDate(newPayday.getDate() + days);
+      const y = newPayday.getFullYear();
+      const m = String(newPayday.getMonth() + 1).padStart(2, '0');
+      const d = String(newPayday.getDate()).padStart(2, '0');
+      const updatedIncome = { ...income, nextPayday: `${y}-${m}-${d}` };
+      await saveIncome(updatedIncome);
+      reloadIncome();
+    })();
+  }, [income, cycleData, history, payments, addRecord, incrementCyclesCompleted, updateStreak, reloadIncome]);
 
   const todayStr = new Date().toISOString().split('T')[0];
 
@@ -184,11 +245,7 @@ export default function HomeScreen() {
   // --- Single return — no early returns, just conditional JSX ---
 
   if (loading) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.loadingText}>Loading...</Text>
-      </View>
-    );
+    return <View style={styles.container} />;
   }
 
   if (!hasIncome) {
@@ -305,7 +362,7 @@ export default function HomeScreen() {
         <View style={styles.expandedDay}>
           {expandedDayInfo.payments.map((p) => (
             <View key={p.id} style={styles.expandedRow}>
-              <Text style={styles.expandedName}>{p.name}</Text>
+              <Text style={styles.expandedName}>{capitalizeName(p.name)}</Text>
               <Text style={styles.expandedAmount}>{formatCurrency(p.amount)}</Text>
             </View>
           ))}
@@ -358,7 +415,7 @@ export default function HomeScreen() {
                   </>
                 ) : (
                   <>
-                    <Text style={styles.nextPaymentName}>{nextPayment.name}</Text>
+                    <Text style={styles.nextPaymentName}>{capitalizeName(nextPayment.name)}</Text>
                     <Text style={styles.nextPaymentDate}>
                       {formatRelativeDate(nextPayment.nextDueDate)}
                     </Text>
@@ -416,7 +473,7 @@ export default function HomeScreen() {
               <View style={styles.listRow}>
                 <View style={styles.listRowLeft}>
                   <View style={styles.listRowTop}>
-                    <Text style={styles.listRowName}>{payment.name}</Text>
+                    <Text style={styles.listRowName}>{capitalizeName(payment.name)}</Text>
                     <View style={styles.categoryBadge}>
                       <Text style={styles.categoryBadgeText}>
                         {payment.category.toUpperCase()}
@@ -427,9 +484,16 @@ export default function HomeScreen() {
                     {formatRelativeDate(payment.nextDueDate)}
                   </Text>
                 </View>
-                <Text style={styles.listRowAmount}>
-                  {formatCurrency(payment.amount)}
-                </Text>
+                <View style={styles.listRowRight}>
+                  <Text style={styles.listRowAmount}>
+                    {formatCurrency(payment.amount)}
+                  </Text>
+                  {payment.isSplit && payment.fullAmount && payment.splitCount && (
+                    <Text style={styles.splitCaption}>
+                      1/{payment.splitCount} of {formatCurrency(payment.fullAmount)}
+                    </Text>
+                  )}
+                </View>
               </View>
               {index < comingUp.length - 1 && <View style={styles.separator} />}
             </View>
@@ -457,7 +521,7 @@ export default function HomeScreen() {
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Largest payment</Text>
             <Text style={styles.summaryValue}>
-              {largestPayment.name} · {formatCurrency(largestPayment.amount)}
+              {capitalizeName(largestPayment.name)} · {formatCurrency(largestPayment.amount)}
             </Text>
           </View>
         )}
@@ -482,12 +546,6 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.md,
-  },
-  loadingText: {
-    color: COLORS.textSecondary,
-    fontSize: FONT_SIZES.body,
-    textAlign: 'center',
-    marginTop: SPACING.xxxl,
   },
   emptyText: {
     color: COLORS.textSecondary,
@@ -748,9 +806,17 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.caption,
   },
+  listRowRight: {
+    alignItems: 'flex-end' as const,
+  },
   listRowAmount: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
+  },
+  splitCaption: {
+    color: COLORS.textTertiary,
+    fontSize: FONT_SIZES.caption,
+    marginTop: 2,
   },
   separator: {
     height: 1,

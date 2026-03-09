@@ -11,6 +11,9 @@ export interface Payment {
   category: PaymentCategory;
   cardId?: string;
   createdAt: string;
+  isSplit?: boolean;
+  splitCount?: number;
+  fullAmount?: number;
 }
 
 export interface Card {

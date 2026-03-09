@@ -6,6 +6,7 @@ import { Payment, PayFrequency } from '../../types/payment';
 import { usePayments } from '../../hooks/usePayments';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatRelativeDate } from '../../utils/formatDate';
+import { capitalizeName } from '../../utils/capitalize';
 import { generateId } from '../../utils/generateId';
 import { AddPaymentSheet } from '../../components/payments/AddPaymentSheet';
 import { PremiumGate } from '../../components/ui/PremiumGate';
@@ -94,11 +95,7 @@ export default function PaymentsScreen() {
   const hasPayments = payments.length > 0;
 
   if (loading) {
-    return (
-      <View style={[styles.container, styles.centred]}>
-        <Text style={styles.loadingText}>Loading...</Text>
-      </View>
-    );
+    return <View style={styles.container} />;
   }
 
   return (
@@ -118,7 +115,7 @@ export default function PaymentsScreen() {
           {payments.map((p) => (
             <Pressable key={p.id} style={styles.card} onPress={() => handleEditPayment(p)}>
               <View style={styles.cardLeft}>
-                <Text style={styles.cardName}>{p.name}</Text>
+                <Text style={styles.cardName}>{capitalizeName(p.name)}</Text>
                 <Text style={styles.cardDetail}>
                   {frequencyLabel(p.frequency)} · due {formatRelativeDate(p.nextDueDate)}
                 </Text>
@@ -130,6 +127,11 @@ export default function PaymentsScreen() {
               </View>
               <View style={styles.cardRight}>
                 <Text style={styles.cardAmount}>{formatCurrency(p.amount)}</Text>
+                {p.isSplit && p.fullAmount && p.splitCount && (
+                  <Text style={styles.splitCaption}>
+                    1/{p.splitCount} of {formatCurrency(p.fullAmount)}
+                  </Text>
+                )}
                 {confirmDeleteId === p.id ? (
                   <View style={styles.confirmRow}>
                     <Pressable onPress={() => setConfirmDeleteId(null)}>
@@ -159,12 +161,12 @@ export default function PaymentsScreen() {
         </ScrollView>
       ) : (
         <View style={[styles.centred, { flex: 1 }]}>
-          <Text style={styles.emptyTitle}>No payments yet</Text>
+          <Text style={styles.emptyTitle}>You haven't added any payments yet</Text>
           <Text style={styles.emptySubtitle}>
-            Track your bills, subscriptions, and BNPL so you know what's really left.
+            Track your bills, BNPL, and subscriptions
           </Text>
-          <Pressable onPress={handleAddPayment}>
-            <Text style={styles.emptyAction}>+ Add your first payment</Text>
+          <Pressable style={styles.emptyButton} onPress={handleAddPayment}>
+            <Text style={styles.emptyButtonText}>+ Add your first payment</Text>
           </Pressable>
         </View>
       )}
@@ -204,10 +206,6 @@ const styles = StyleSheet.create({
   centred: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  loadingText: {
-    color: COLORS.textSecondary,
-    fontSize: FONT_SIZES.body,
   },
   header: {
     paddingTop: SPACING.xxl + SPACING.md,
@@ -276,6 +274,11 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.h3,
     fontWeight: FONT_WEIGHTS.bold,
   },
+  splitCaption: {
+    color: COLORS.textTertiary,
+    fontSize: FONT_SIZES.caption,
+    marginTop: 2,
+  },
   deleteButton: {
     width: 28,
     height: 28,
@@ -315,8 +318,16 @@ const styles = StyleSheet.create({
     maxWidth: 280,
     marginBottom: SPACING.lg,
   },
-  emptyAction: {
-    color: COLORS.accent,
+  emptyButton: {
+    backgroundColor: COLORS.accent,
+    height: 48,
+    paddingHorizontal: SPACING.xl,
+    borderRadius: BORDER_RADIUS.button,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyButtonText: {
+    color: COLORS.black,
     fontSize: FONT_SIZES.body,
     fontWeight: FONT_WEIGHTS.bold,
   },

@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
 import { Payment, PayFrequency, PaymentCategory } from '../../types/payment';
+import { formatCurrency } from '../../utils/formatCurrency';
+import { PremiumGate } from '../ui/PremiumGate';
 
 const FREQUENCIES: { label: string; value: PayFrequency }[] = [
   { label: 'Weekly', value: 'weekly' },
@@ -35,6 +37,7 @@ interface AddPaymentSheetProps {
   onClose: () => void;
   onSave: (payment: Omit<Payment, 'id' | 'createdAt'>) => void;
   initialPayment?: Payment;
+  isPremium?: boolean;
 }
 
 function parseDueDate(input: string): string {
@@ -60,33 +63,64 @@ function formatToDisplay(isoDate: string): string {
   return '';
 }
 
-export function AddPaymentSheet({ visible, onClose, onSave, initialPayment }: AddPaymentSheetProps) {
+export function AddPaymentSheet({
+  visible,
+  onClose,
+  onSave,
+  initialPayment,
+  isPremium = false,
+}: AddPaymentSheetProps) {
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [frequency, setFrequency] = useState<PayFrequency>('monthly');
   const [category, setCategory] = useState<PaymentCategory>('other');
   const [dueDate, setDueDate] = useState('');
+  const [isSplit, setIsSplit] = useState(false);
+  const [splitCount, setSplitCount] = useState('2');
+  const [showPremiumGate, setShowPremiumGate] = useState(false);
 
   const isEditing = !!initialPayment;
 
   useEffect(() => {
     if (visible && initialPayment) {
       setName(initialPayment.name);
-      setAmount(String(initialPayment.amount));
       setFrequency(initialPayment.frequency);
       setCategory(initialPayment.category);
       setDueDate(formatToDisplay(initialPayment.nextDueDate));
+      if (initialPayment.isSplit && initialPayment.fullAmount) {
+        setIsSplit(true);
+        setSplitCount(String(initialPayment.splitCount ?? 2));
+        setAmount(String(initialPayment.fullAmount));
+      } else {
+        setIsSplit(false);
+        setSplitCount('2');
+        setAmount(String(initialPayment.amount));
+      }
     } else if (visible) {
       setName('');
       setAmount('');
       setFrequency('monthly');
       setCategory('other');
       setDueDate('');
+      setIsSplit(false);
+      setSplitCount('2');
     }
   }, [visible, initialPayment]);
 
   const parsedAmount = parseFloat(amount);
+  const parsedSplitCount = Math.max(2, parseInt(splitCount, 10) || 2);
+  const userShare = isSplit && !isNaN(parsedAmount) && parsedAmount > 0
+    ? Math.round((parsedAmount / parsedSplitCount) * 100) / 100
+    : parsedAmount;
   const canSave = name.trim().length > 0 && !isNaN(parsedAmount) && parsedAmount > 0;
+
+  const handleSplitToggle = () => {
+    if (!isPremium) {
+      setShowPremiumGate(true);
+      return;
+    }
+    setIsSplit(!isSplit);
+  };
 
   const handleSave = () => {
     if (!canSave) return;
@@ -95,14 +129,21 @@ export function AddPaymentSheet({ visible, onClose, onSave, initialPayment }: Ad
       ? parseDueDate(dueDate)
       : new Date().toISOString().split('T')[0];
 
-    onSave({
+    const payment: Omit<Payment, 'id' | 'createdAt'> = {
       name: name.trim(),
-      amount: parsedAmount,
+      amount: isSplit ? userShare : parsedAmount,
       frequency,
       nextDueDate: dueDateStr,
       category,
-    });
+    };
 
+    if (isSplit) {
+      payment.isSplit = true;
+      payment.splitCount = parsedSplitCount;
+      payment.fullAmount = parsedAmount;
+    }
+
+    onSave(payment);
     onClose();
   };
 
@@ -132,7 +173,9 @@ export function AddPaymentSheet({ visible, onClose, onSave, initialPayment }: Ad
             />
 
             {/* Amount */}
-            <Text style={[styles.label, styles.fieldGap]}>AMOUNT</Text>
+            <Text style={[styles.label, styles.fieldGap]}>
+              {isSplit ? 'FULL AMOUNT' : 'AMOUNT'}
+            </Text>
             <View style={styles.amountContainer}>
               <Text style={styles.dollarSign}>$</Text>
               <TextInput
@@ -144,6 +187,11 @@ export function AddPaymentSheet({ visible, onClose, onSave, initialPayment }: Ad
                 placeholderTextColor={COLORS.textTertiary}
               />
             </View>
+            {isSplit && !isNaN(parsedAmount) && parsedAmount > 0 && (
+              <Text style={styles.shareText}>
+                Your share: {formatCurrency(userShare)}
+              </Text>
+            )}
 
             {/* Frequency */}
             <Text style={[styles.label, styles.fieldGap]}>HOW OFTEN?</Text>
@@ -183,6 +231,27 @@ export function AddPaymentSheet({ visible, onClose, onSave, initialPayment }: Ad
               })}
             </View>
 
+            {/* Split toggle */}
+            <Text style={[styles.label, styles.fieldGap]}>SPLIT THIS BILL?</Text>
+            <Pressable style={styles.splitRow} onPress={handleSplitToggle}>
+              <Text style={styles.splitLabel}>Split between people</Text>
+              <View style={[styles.toggle, isSplit && styles.toggleOn]}>
+                <View style={[styles.toggleThumb, isSplit && styles.toggleThumbOn]} />
+              </View>
+            </Pressable>
+            {isSplit && (
+              <View style={styles.splitCountRow}>
+                <Text style={styles.splitCountLabel}>How many people?</Text>
+                <TextInput
+                  style={styles.splitCountInput}
+                  value={splitCount}
+                  onChangeText={(t) => setSplitCount(t.replace(/[^0-9]/g, ''))}
+                  keyboardType="numeric"
+                  maxLength={2}
+                />
+              </View>
+            )}
+
             {/* Due date */}
             <Text style={[styles.label, styles.fieldGap]}>NEXT DUE DATE</Text>
             <TextInput
@@ -211,6 +280,13 @@ export function AddPaymentSheet({ visible, onClose, onSave, initialPayment }: Ad
           </ScrollView>
         </Pressable>
       </Pressable>
+
+      {showPremiumGate && (
+        <PremiumGate
+          feature="bill splitting"
+          onDismiss={() => setShowPremiumGate(false)}
+        />
+      )}
     </Modal>
   );
 }
@@ -286,6 +362,12 @@ const styles = StyleSheet.create({
     height: 56,
     padding: 0,
   },
+  shareText: {
+    color: COLORS.accent,
+    fontSize: FONT_SIZES.bodySmall,
+    fontWeight: FONT_WEIGHTS.bold,
+    marginTop: SPACING.sm,
+  },
   optionRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -334,6 +416,64 @@ const styles = StyleSheet.create({
   categoryTextSelected: {
     color: COLORS.accent,
   },
+
+  // Split
+  splitRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.surface,
+    height: 48,
+    paddingHorizontal: SPACING.md,
+    borderRadius: BORDER_RADIUS.sharp,
+  },
+  splitLabel: {
+    color: COLORS.text,
+    fontSize: FONT_SIZES.body,
+  },
+  toggle: {
+    width: 44,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: COLORS.background,
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+  },
+  toggleOn: {
+    backgroundColor: COLORS.accent,
+  },
+  toggleThumb: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: COLORS.textTertiary,
+  },
+  toggleThumbOn: {
+    alignSelf: 'flex-end',
+    backgroundColor: COLORS.black,
+  },
+  splitCountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+  },
+  splitCountLabel: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZES.bodySmall,
+  },
+  splitCountInput: {
+    backgroundColor: COLORS.surface,
+    color: COLORS.text,
+    fontSize: FONT_SIZES.body,
+    fontWeight: FONT_WEIGHTS.bold,
+    width: 48,
+    height: 40,
+    textAlign: 'center',
+    borderRadius: BORDER_RADIUS.sharp,
+  },
+
   actions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',

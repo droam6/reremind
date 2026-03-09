@@ -7,6 +7,7 @@ import { useCycleHistory } from '../../hooks/useCycleHistory';
 import { usePayments } from '../../hooks/usePayments';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatRelativeDate, parseDate } from '../../utils/formatDate';
+import { capitalizeName } from '../../utils/capitalize';
 import { PremiumGate } from '../../components/ui/PremiumGate';
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -53,11 +54,7 @@ export default function InsightsScreen() {
     : null;
 
   if (loading) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.loadingText}>Loading...</Text>
-      </View>
-    );
+    return <View style={styles.container} />;
   }
 
   const tenure = stats?.firstUsedDate ? formatTenure(stats.firstUsedDate) : '0 days';
@@ -163,7 +160,7 @@ export default function InsightsScreen() {
                 <View style={styles.bnplRow}>
                   <Text style={styles.bnplLabel}>Next instalment</Text>
                   <Text style={styles.bnplDetail}>
-                    {nextBnpl.name} · {formatCurrency(nextBnpl.amount)} · {formatRelativeDate(nextBnpl.nextDueDate)}
+                    {capitalizeName(nextBnpl.name)} · {formatCurrency(nextBnpl.amount)} · {formatRelativeDate(nextBnpl.nextDueDate)}
                   </Text>
                 </View>
               </>
