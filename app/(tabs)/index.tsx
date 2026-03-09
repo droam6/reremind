@@ -7,7 +7,7 @@ import { useIncome } from '../../hooks/useIncome';
 import { usePayments } from '../../hooks/usePayments';
 import { useCycleData } from '../../hooks/useCycleData';
 import { formatCurrency } from '../../utils/formatCurrency';
-import { formatRelativeDate, formatCountdown } from '../../utils/formatDate';
+import { formatRelativeDate, formatCountdown, parseDate } from '../../utils/formatDate';
 import { getDayPayments, getWeekPayments, getWeekTotal, getBusiestDay } from '../../utils/calculations';
 import { ProgressRing } from '../../components/dashboard/ProgressRing';
 
@@ -44,8 +44,7 @@ function plural(count: number, word: string): string {
 function daysFromToday(dateStr: string): number {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const target = new Date(dateStr);
-  target.setHours(0, 0, 0, 0);
+  const target = parseDate(dateStr);
   return Math.round((target.getTime() - today.getTime()) / 86400000);
 }
 
@@ -175,8 +174,12 @@ export default function HomeScreen() {
   // Coming up (skip first since it's shown in next payment card)
   const comingUp = cycleData.upcomingPayments.slice(1, 4);
 
-  // Largest payment
-  const largestPayment = [...payments].sort((a, b) => b.amount - a.amount)[0] ?? null;
+  // Largest payment — only from payments actually due THIS cycle
+  const cyclePaymentIds = new Set(cycleData.cycleOccurrences.map((o) => o.payment.id));
+  const cycleFilteredPayments = payments.filter((p) => cyclePaymentIds.has(p.id));
+  const largestPayment = cycleFilteredPayments.length > 0
+    ? [...cycleFilteredPayments].sort((a, b) => b.amount - a.amount)[0]
+    : null;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -307,7 +310,7 @@ export default function HomeScreen() {
               ) : (
                 <>
                   <Text style={styles.weekStatNumber}>
-                    {daysToNext !== null ? `${daysToNext} ${plural(daysToNext, 'day')}` : '--'}
+                    {daysToNext !== null ? `${daysToNext} ${plural(daysToNext, 'day')}` : '0 days'}
                   </Text>
                   <Text style={styles.weekStatLabel}>next payment</Text>
                 </>
