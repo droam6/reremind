@@ -169,6 +169,28 @@ export default function InsightsScreen() {
         </View>
       )}
 
+      {/* Section 5: Total Debt Estimate */}
+      {bnplPayments.length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionHeader}>TOTAL DEBT</Text>
+          <View style={styles.bnplCard}>
+            <View style={styles.bnplRow}>
+              <Text style={styles.bnplLabel}>Estimated remaining</Text>
+              <Text style={[styles.bnplAmount, { color: COLORS.warning }]}>
+                {formatCurrency(bnplPayments.reduce((sum, p) => {
+                  // Rough estimate: 4 remaining instalments for fortnightly BNPL
+                  const remaining = p.frequency === 'fortnightly' ? 4 : p.frequency === 'weekly' ? 8 : 2;
+                  return sum + (p.amount * remaining);
+                }, 0))}
+              </Text>
+            </View>
+            <Text style={styles.debtCaption}>
+              This is a rough estimate based on your tracked payments.
+            </Text>
+          </View>
+        </View>
+      )}
+
       <View style={styles.bottomPad} />
 
       {showPremiumGate && (
@@ -366,6 +388,11 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: COLORS.background,
     marginVertical: SPACING.xs,
+  },
+  debtCaption: {
+    color: COLORS.textTertiary,
+    fontSize: FONT_SIZES.caption,
+    marginTop: SPACING.sm,
   },
 
   bottomPad: {

@@ -15,6 +15,7 @@ import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../
 import { Payment, PayFrequency, PaymentCategory } from '../../types/payment';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { PremiumGate } from '../ui/PremiumGate';
+import { DatePicker } from '../ui/DatePicker';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -162,7 +163,7 @@ export function AddPaymentSheet({
       setName(initialPayment.name);
       setFrequency(initialPayment.frequency);
       setCategory(initialPayment.category);
-      setDueDate(formatToDisplay(initialPayment.nextDueDate));
+      setDueDate(initialPayment.nextDueDate);
       if (initialPayment.isSplit && initialPayment.fullAmount) {
         setIsSplit(true);
         setSplitCount(String(initialPayment.splitCount ?? 2));
@@ -201,9 +202,7 @@ export function AddPaymentSheet({
   const handleSave = () => {
     if (!canSave) return;
 
-    const dueDateStr = dueDate.trim()
-      ? parseDueDate(dueDate)
-      : new Date().toISOString().split('T')[0];
+    const dueDateStr = dueDate || new Date().toISOString().split('T')[0];
 
     const payment: Omit<Payment, 'id' | 'createdAt'> = {
       name: name.trim(),
@@ -350,14 +349,13 @@ export function AddPaymentSheet({
               )}
 
               {/* Due date */}
-              <Text style={[styles.label, styles.fieldGap]}>NEXT DUE DATE</Text>
-              <TextInput
-                style={styles.input}
-                value={dueDate}
-                onChangeText={setDueDate}
-                placeholder="DD/MM/YYYY"
-                placeholderTextColor={COLORS.textTertiary}
-              />
+              <View style={styles.fieldGapView}>
+                <DatePicker
+                  value={dueDate}
+                  onChange={setDueDate}
+                  label="NEXT DUE DATE"
+                />
+              </View>
 
               {/* Action buttons */}
               <View style={styles.actions}>
@@ -581,6 +579,9 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.sharp,
   },
 
+  fieldGapView: {
+    marginTop: 20,
+  },
   actions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',

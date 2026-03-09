@@ -11,6 +11,8 @@ const KEYS = {
   USER: '@reremind/user',
   HISTORY: '@reremind/history',
   LIFETIME: '@reremind/lifetime',
+  SAVINGS_GOAL: '@reremind/savingsGoal',
+  SAVINGS_NUDGE: '@reremind/showSavingsNudge',
 } as const;
 
 export async function getIncome(): Promise<Income | null> {
@@ -155,11 +157,55 @@ export async function saveLifetimeStats(stats: LifetimeStats): Promise<void> {
   }
 }
 
+// Savings nudge
+
+export async function getSavingsGoal(): Promise<number | null> {
+  try {
+    const raw = await AsyncStorage.getItem(KEYS.SAVINGS_GOAL);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function saveSavingsGoal(amount: number): Promise<void> {
+  try {
+    await AsyncStorage.setItem(KEYS.SAVINGS_GOAL, JSON.stringify(amount));
+  } catch (e) {
+    console.error('Failed to save savings goal:', e);
+  }
+}
+
+export async function clearSavingsGoal(): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(KEYS.SAVINGS_GOAL);
+  } catch (e) {
+    console.error('Failed to clear savings goal:', e);
+  }
+}
+
+export async function getSavingsNudgeFlag(): Promise<boolean> {
+  try {
+    const raw = await AsyncStorage.getItem(KEYS.SAVINGS_NUDGE);
+    return raw === 'true';
+  } catch (e) {
+    return false;
+  }
+}
+
+export async function setSavingsNudgeFlag(show: boolean): Promise<void> {
+  try {
+    await AsyncStorage.setItem(KEYS.SAVINGS_NUDGE, String(show));
+  } catch (e) {
+    console.error('Failed to set savings nudge flag:', e);
+  }
+}
+
 export async function clearAll(): Promise<void> {
   try {
     await AsyncStorage.multiRemove([
       KEYS.INCOME, KEYS.PAYMENTS, KEYS.CARDS, KEYS.USER,
-      KEYS.HISTORY, KEYS.LIFETIME,
+      KEYS.HISTORY, KEYS.LIFETIME, KEYS.SAVINGS_GOAL, KEYS.SAVINGS_NUDGE,
     ]);
   } catch (e) {
     console.error('Failed to clear storage:', e);

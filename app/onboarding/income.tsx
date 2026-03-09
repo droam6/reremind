@@ -5,6 +5,7 @@ import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../
 import { IncomeFrequency } from '../../types/income';
 import { useOnboarding } from './OnboardingContext';
 import { useFadeIn, useProgressWidth } from '../../utils/animations';
+import { DatePicker } from '../../components/ui/DatePicker';
 
 const FREQUENCIES: { label: string; value: IncomeFrequency }[] = [
   { label: 'Weekly', value: 'weekly' },
@@ -12,32 +13,10 @@ const FREQUENCIES: { label: string; value: IncomeFrequency }[] = [
   { label: 'Monthly', value: 'monthly' },
 ];
 
-function formatPaydayDisplay(iso: string): string {
-  if (!iso) return '';
-  const parts = iso.split('-');
-  if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
-  return '';
-}
-
-function parsePaydayInput(input: string): string {
-  const parts = input.split('/');
-  if (parts.length === 3) {
-    const [dd, mm, yyyy] = parts;
-    const d = parseInt(dd, 10);
-    const m = parseInt(mm, 10);
-    const y = parseInt(yyyy, 10);
-    if (d > 0 && m > 0 && y > 2000) {
-      return `${yyyy}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    }
-  }
-  return '';
-}
-
 export default function IncomeScreen() {
   const router = useRouter();
   const { income, setIncomeAmount, setIncomeFrequency, setIncomeNextPayday } = useOnboarding();
   const [amountText, setAmountText] = useState(income.amount > 0 ? String(income.amount) : '');
-  const [paydayText, setPaydayText] = useState(formatPaydayDisplay(income.nextPayday));
 
   const contentOpacity = useFadeIn(200, 400);
   const progressWidth = useProgressWidth(40, 500, 200);
@@ -53,13 +32,11 @@ export default function IncomeScreen() {
     }
   };
 
-  const handlePaydayChange = (text: string) => {
-    setPaydayText(text);
-    const parsed = parsePaydayInput(text);
-    setIncomeNextPayday(parsed);
+  const handlePaydayChange = (isoDate: string) => {
+    setIncomeNextPayday(isoDate);
   };
 
-  const canProceed = income.amount > 0 && income.frequency && paydayText.length >= 8;
+  const canProceed = income.amount > 0 && income.frequency && income.nextPayday.length >= 8;
 
   return (
     <View style={styles.container}>
@@ -133,13 +110,10 @@ export default function IncomeScreen() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>NEXT PAYDAY</Text>
-          <TextInput
-            style={styles.paydayInput}
-            value={paydayText}
-            onChangeText={handlePaydayChange}
-            placeholder="DD/MM/YYYY"
-            placeholderTextColor={COLORS.textTertiary}
+          <DatePicker
+            value={income.nextPayday}
+            onChange={handlePaydayChange}
+            label="NEXT PAYDAY"
           />
         </View>
       </Animated.View>
@@ -229,14 +203,6 @@ const styles = StyleSheet.create({
     fontWeight: FONT_WEIGHTS.bold,
     height: 64,
     padding: 0,
-  },
-  paydayInput: {
-    backgroundColor: COLORS.surface,
-    color: COLORS.text,
-    fontSize: FONT_SIZES.body,
-    height: 48,
-    paddingHorizontal: SPACING.md,
-    borderRadius: BORDER_RADIUS.button,
   },
   frequencyRow: {
     flexDirection: 'row',

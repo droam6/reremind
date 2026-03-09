@@ -16,6 +16,9 @@ import { generateId } from '../../utils/generateId';
 import { saveIncome } from '../../utils/storage';
 import { ProgressRing } from '../../components/dashboard/ProgressRing';
 import { WhatIfSimulator } from '../../components/dashboard/WhatIfSimulator';
+import { SavingsNudge } from '../../components/dashboard/SavingsNudge';
+import { getTodaysTip } from '../../constants/tips';
+import { setSavingsNudgeFlag } from '../../utils/storage';
 
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -106,6 +109,7 @@ export default function HomeScreen() {
   const { history, addRecord, reload: reloadHistory } = useCycleHistory();
   const { incrementCyclesCompleted, updateStreak, reload: reloadStats } = useLifetimeStats();
   const cycleRecordedRef = useRef(false);
+  const [showSavingsNudge, setShowSavingsNudge] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
@@ -151,6 +155,11 @@ export default function HomeScreen() {
       await addRecord(record);
       await incrementCyclesCompleted();
       await updateStreak(cycleData.remainingAfterBills);
+
+      // Trigger savings nudge if money was left over
+      if (cycleData.remainingAfterBills > 0) {
+        await setSavingsNudgeFlag(true);
+      }
 
       // Auto-advance payday
       const cycleDaysMap: Record<string, number> = {
@@ -640,6 +649,14 @@ export default function HomeScreen() {
         </View>
       )}
 
+      {/* 7.5. Daily Tip */}
+      <View style={styles.section}>
+        <View style={styles.tipCard}>
+          <Text style={styles.tipLabel}>TIP</Text>
+          <Text style={styles.tipText}>{getTodaysTip()}</Text>
+        </View>
+      </View>
+
       {/* 8. What If Simulator */}
       <WhatIfSimulator
         remainingAfterBills={cycleData.remainingAfterBills}
@@ -670,6 +687,14 @@ export default function HomeScreen() {
 
       {/* 10. Bottom padding */}
       <View style={styles.bottomPad} />
+
+      {/* Savings Nudge Modal */}
+      {showSavingsNudge && (
+        <SavingsNudge
+          remainingOnPayday={cycleData.remainingAfterBills}
+          onDismiss={() => setShowSavingsNudge(false)}
+        />
+      )}
     </ScrollView>
   );
 }
@@ -1020,6 +1045,25 @@ const styles = StyleSheet.create({
   summaryValue: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
+  },
+
+  // Tip card
+  tipCard: {
+    backgroundColor: COLORS.surface,
+    padding: 20,
+  },
+  tipLabel: {
+    color: COLORS.accent,
+    fontSize: FONT_SIZES.caption,
+    fontWeight: FONT_WEIGHTS.bold,
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+    marginBottom: SPACING.sm,
+  },
+  tipText: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZES.bodySmall,
+    lineHeight: 20,
   },
 
   bottomPad: {

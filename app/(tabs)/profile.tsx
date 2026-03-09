@@ -22,6 +22,7 @@ import { generateId } from '../../utils/generateId';
 import { clearAll } from '../../utils/storage';
 import { FREE_LIMITS } from '../../constants/limits';
 import { PremiumGate } from '../../components/ui/PremiumGate';
+import { DatePicker } from '../../components/ui/DatePicker';
 
 const FREQUENCIES: { label: string; value: IncomeFrequency }[] = [
   { label: 'Weekly', value: 'weekly' },
@@ -86,7 +87,7 @@ export default function ProfileScreen() {
     if (income) {
       setEditAmount(String(income.amount));
       setEditFrequency(income.frequency);
-      setEditPayday(formatToDisplay(income.nextPayday));
+      setEditPayday(income.nextPayday);
     } else {
       setEditAmount('');
       setEditFrequency('fortnightly');
@@ -99,7 +100,7 @@ export default function ProfileScreen() {
     const amount = parseFloat(editAmount);
     if (isNaN(amount) || amount <= 0) return;
     const paydayStr = editPayday.trim()
-      ? parseDueDate(editPayday)
+      ? editPayday
       : income?.nextPayday ?? new Date().toISOString().split('T')[0];
     await saveIncome({ amount, frequency: editFrequency, nextPayday: paydayStr });
     setShowEditIncome(false);
@@ -287,14 +288,13 @@ export default function ProfileScreen() {
               })}
             </View>
 
-            <Text style={[styles.modalLabel, { marginTop: 20 }]}>NEXT PAYDAY</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={editPayday}
-              onChangeText={setEditPayday}
-              placeholder="DD/MM/YYYY"
-              placeholderTextColor={COLORS.textTertiary}
-            />
+            <View style={{ marginTop: 20 }}>
+              <DatePicker
+                value={editPayday}
+                onChange={setEditPayday}
+                label="NEXT PAYDAY"
+              />
+            </View>
 
             <View style={styles.modalActions}>
               <Pressable
