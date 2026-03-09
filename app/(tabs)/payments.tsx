@@ -174,7 +174,10 @@ export default function PaymentsScreen() {
       {/* FAB */}
       {hasPayments && (
         <Pressable style={styles.fab} onPress={handleAddPayment}>
-          <Text style={styles.fabText}>+</Text>
+          <View style={styles.fabIconContainer}>
+            <View style={styles.fabBarHorizontal} />
+            <View style={styles.fabBarVertical} />
+          </View>
         </Pressable>
       )}
 
@@ -342,14 +345,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  fabText: {
-    color: COLORS.black,
-    fontSize: 28,
-    fontWeight: FONT_WEIGHTS.bold,
-    lineHeight: 28,
-    textAlign: 'center',
-    includeFontPadding: false,
-    paddingBottom: 1,
+  fabIconContainer: {
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fabBarHorizontal: {
+    position: 'absolute',
+    width: 20,
+    height: 2.5,
+    backgroundColor: COLORS.black,
+    borderRadius: 1,
+  },
+  fabBarVertical: {
+    position: 'absolute',
+    width: 2.5,
+    height: 20,
+    backgroundColor: COLORS.black,
+    borderRadius: 1,
   },
   bottomPad: {
     height: 120,

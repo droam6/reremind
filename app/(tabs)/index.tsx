@@ -1,5 +1,5 @@
 import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Animated, Easing, LayoutAnimation, Platform, UIManager } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Animated, Easing } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
@@ -16,11 +16,6 @@ import { generateId } from '../../utils/generateId';
 import { saveIncome } from '../../utils/storage';
 import { ProgressRing } from '../../components/dashboard/ProgressRing';
 import { WhatIfSimulator } from '../../components/dashboard/WhatIfSimulator';
-
-// Enable LayoutAnimation on Android
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -92,19 +87,14 @@ function freqLabel(freq: string): string {
   }
 }
 
-const expandAnimation = {
-  duration: 300,
-  create: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
-  update: { type: LayoutAnimation.Types.easeInEaseOut },
-  delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
-};
+// Height per payment card in expanded day detail
+const EXPANDED_BASE_HEIGHT = 120;
+const EXPANDED_EXTRA_PER_PAYMENT = 80;
 
-const collapseAnimation = {
-  duration: 200,
-  create: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
-  update: { type: LayoutAnimation.Types.easeInEaseOut },
-  delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
-};
+function getExpandedHeight(paymentCount: number): number {
+  if (paymentCount <= 1) return EXPANDED_BASE_HEIGHT;
+  return EXPANDED_BASE_HEIGHT + (paymentCount - 1) * EXPANDED_EXTRA_PER_PAYMENT;
+}
 
 export default function HomeScreen() {
   // ALL hooks called unconditionally at the top — no early returns
@@ -177,6 +167,11 @@ export default function HomeScreen() {
       reloadIncome();
     })();
   }, [income, cycleData, history, payments, addRecord, incrementCyclesCompleted, updateStreak, reloadIncome]);
+
+  // Calendar expand/collapse animation refs (effect moved after dayPaymentMap)
+  const expandHeight = useRef(new Animated.Value(0)).current;
+  const expandOpacity = useRef(new Animated.Value(0)).current;
+  const prevExpandedDay = useRef<string | null>(null);
 
   // First-mount staggered animations (only on initial mount, not tab switches)
   const isFirstMount = useRef(true);
@@ -263,6 +258,48 @@ export default function HomeScreen() {
   }, [calendarDays, payments, hasDashboardData]);
 
   const expandedDayInfo = expandedDay ? dayPaymentMap.get(expandedDay) : undefined;
+
+  // Calendar expand/collapse animation effect
+  useEffect(() => {
+    if (expandedDay && expandedDay !== prevExpandedDay.current) {
+      const dayInfo = dayPaymentMap.get(expandedDay);
+      const count = dayInfo?.payments.length ?? 1;
+      const targetHeight = getExpandedHeight(count);
+
+      expandHeight.setValue(0);
+      expandOpacity.setValue(0);
+      Animated.parallel([
+        Animated.timing(expandHeight, {
+          toValue: targetHeight,
+          duration: 400,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: false,
+        }),
+        Animated.timing(expandOpacity, {
+          toValue: 1,
+          duration: 300,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: false,
+        }),
+      ]).start();
+    } else if (!expandedDay && prevExpandedDay.current) {
+      Animated.parallel([
+        Animated.timing(expandHeight, {
+          toValue: 0,
+          duration: 300,
+          easing: Easing.in(Easing.cubic),
+          useNativeDriver: false,
+        }),
+        Animated.timing(expandOpacity, {
+          toValue: 0,
+          duration: 200,
+          easing: Easing.in(Easing.cubic),
+          useNativeDriver: false,
+        }),
+      ]).start();
+    }
+    prevExpandedDay.current = expandedDay;
+  }, [expandedDay, dayPaymentMap, expandHeight, expandOpacity]);
 
   const weekStats = useMemo(() => {
     if (!hasDashboardData) return { count: 0, total: 0, busiest: { date: '', count: 0, total: 0 } };
@@ -397,9 +434,7 @@ export default function HomeScreen() {
               style={styles.calendarCell}
               onPress={() => {
                 if (hasDayPayments) {
-                  const isCollapsing = expandedDay === day.dateStr;
-                  LayoutAnimation.configureNext(isCollapsing ? collapseAnimation : expandAnimation);
-                  setExpandedDay(isCollapsing ? null : day.dateStr);
+                  setExpandedDay(expandedDay === day.dateStr ? null : day.dateStr);
                 }
               }}
             >
@@ -418,34 +453,38 @@ export default function HomeScreen() {
       </Animated.View>
 
       {/* Expanded day detail */}
-      {expandedDayInfo && expandedDayInfo.payments.length > 0 && (
-        <View style={styles.expandedDay}>
-          {expandedDayInfo.payments.length > 1 && (
-            <View style={styles.expandedSummary}>
-              <Text style={styles.expandedSummaryText}>
-                {expandedDayInfo.payments.length} payments · {formatCurrency(expandedDayInfo.total)}
-              </Text>
-            </View>
-          )}
-          {expandedDayInfo.payments.map((p, i) => (
-            <View key={p.id}>
-              <View style={styles.expandedCard}>
-                <View style={styles.expandedCardTop}>
-                  <Text style={styles.expandedName}>{capitalizeName(p.name)}</Text>
-                  <Text style={styles.expandedAmount}>{formatCurrency(p.amount)}</Text>
+      {(expandedDay || prevExpandedDay.current) && (
+        <Animated.View style={[styles.expandedDay, { height: expandHeight, opacity: expandOpacity }]}>
+          {expandedDayInfo && expandedDayInfo.payments.length > 0 && (
+            <>
+              {expandedDayInfo.payments.length > 1 && (
+                <View style={styles.expandedSummary}>
+                  <Text style={styles.expandedSummaryText}>
+                    {expandedDayInfo.payments.length} payments · {formatCurrency(expandedDayInfo.total)}
+                  </Text>
                 </View>
-                <View style={styles.expandedCardBottom}>
-                  <View style={styles.expandedCategoryPill}>
-                    <Text style={styles.expandedCategoryText}>{p.category.toUpperCase()}</Text>
+              )}
+              {expandedDayInfo.payments.map((p, i) => (
+                <View key={p.id}>
+                  <View style={styles.expandedCard}>
+                    <View style={styles.expandedCardTop}>
+                      <Text style={styles.expandedName}>{capitalizeName(p.name)}</Text>
+                      <Text style={styles.expandedAmount}>{formatCurrency(p.amount)}</Text>
+                    </View>
+                    <View style={styles.expandedCardBottom}>
+                      <View style={styles.expandedCategoryPill}>
+                        <Text style={styles.expandedCategoryText}>{p.category.toUpperCase()}</Text>
+                      </View>
+                      <Text style={styles.expandedFrequency}>{freqLabel(p.frequency)}</Text>
+                      <Text style={styles.expandedDue}>Due {formatRelativeDate(p.nextDueDate)}</Text>
+                    </View>
                   </View>
-                  <Text style={styles.expandedFrequency}>{freqLabel(p.frequency)}</Text>
-                  <Text style={styles.expandedDue}>Due {formatRelativeDate(p.nextDueDate)}</Text>
+                  {i < expandedDayInfo.payments.length - 1 && <View style={styles.expandedSeparator} />}
                 </View>
-              </View>
-              {i < expandedDayInfo.payments.length - 1 && <View style={styles.expandedSeparator} />}
-            </View>
-          ))}
-        </View>
+              ))}
+            </>
+          )}
+        </Animated.View>
       )}
 
       {/* Everything below fades in together */}

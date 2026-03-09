@@ -16,7 +16,11 @@ import { Payment, PayFrequency, PaymentCategory } from '../../types/payment';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { PremiumGate } from '../ui/PremiumGate';
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// FAB approximate position offsets (from centre of screen)
+const FAB_OFFSET_X = (SCREEN_WIDTH / 2) - SPACING.lg - 28; // right-aligned FAB
+const FAB_OFFSET_Y = (SCREEN_HEIGHT / 2) - 90 - 28; // bottom-aligned FAB
 
 const FREQUENCIES: { label: string; value: PayFrequency }[] = [
   { label: 'Weekly', value: 'weekly' },
@@ -84,20 +88,20 @@ export function AddPaymentSheet({
   const [splitCount, setSplitCount] = useState('2');
   const [showPremiumGate, setShowPremiumGate] = useState(false);
 
-  // Slide-up animation
-  const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  // Genie effect animation — single progress value 0→1
+  const progress = useRef(new Animated.Value(0)).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     if (visible) {
       setModalVisible(true);
-      slideAnim.setValue(SCREEN_HEIGHT);
+      progress.setValue(0);
       overlayOpacity.setValue(0);
       Animated.parallel([
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 300,
+        Animated.timing(progress, {
+          toValue: 1,
+          duration: 400,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
@@ -110,15 +114,15 @@ export function AddPaymentSheet({
       ]).start();
     } else if (modalVisible) {
       Animated.parallel([
-        Animated.timing(slideAnim, {
-          toValue: SCREEN_HEIGHT,
-          duration: 250,
+        Animated.timing(progress, {
+          toValue: 0,
+          duration: 300,
           easing: Easing.in(Easing.cubic),
           useNativeDriver: true,
         }),
         Animated.timing(overlayOpacity, {
           toValue: 0,
-          duration: 250,
+          duration: 300,
           easing: Easing.in(Easing.cubic),
           useNativeDriver: true,
         }),
@@ -126,7 +130,30 @@ export function AddPaymentSheet({
         setModalVisible(false);
       });
     }
-  }, [visible, slideAnim, overlayOpacity, modalVisible]);
+  }, [visible, progress, overlayOpacity, modalVisible]);
+
+  // Genie interpolations
+  const translateX = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [FAB_OFFSET_X, 0],
+  });
+  const translateY = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [FAB_OFFSET_Y, 0],
+  });
+  const scale = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.05, 1],
+  });
+  const modalOpacity = progress.interpolate({
+    inputRange: [0, 0.1, 0.3],
+    outputRange: [0, 0.3, 1],
+    extrapolate: 'clamp',
+  });
+  const borderRadius = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [28, 0],
+  });
 
   const isEditing = !!initialPayment;
 
@@ -215,10 +242,17 @@ export function AddPaymentSheet({
         <Animated.View
           style={[
             styles.sheet,
-            { transform: [{ translateY: slideAnim }] },
+            {
+              opacity: modalOpacity,
+              transform: [
+                { translateX },
+                { translateY },
+                { scale },
+              ],
+            },
           ]}
         >
-          <Pressable style={styles.modal} onPress={() => {}}>
+          <Animated.View style={[styles.modal, { borderRadius }]}>
             {/* Close button */}
             <Pressable style={styles.closeButton} onPress={handleClose}>
               <Text style={styles.closeText}>×</Text>
@@ -341,7 +375,7 @@ export function AddPaymentSheet({
                 </Pressable>
               </View>
             </ScrollView>
-          </Pressable>
+          </Animated.View>
         </Animated.View>
       </View>
 
@@ -354,6 +388,8 @@ export function AddPaymentSheet({
     </Modal>
   );
 }
+
+const SPACING_LG = SPACING.lg;
 
 const styles = StyleSheet.create({
   container: {
@@ -368,15 +404,15 @@ const styles = StyleSheet.create({
   sheet: {
     width: '100%',
     alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
+    paddingHorizontal: SPACING_LG,
   },
   modal: {
     backgroundColor: COLORS.surfaceLight,
-    borderRadius: BORDER_RADIUS.sharp,
-    padding: SPACING.lg,
+    padding: SPACING_LG,
     maxHeight: '85%',
     width: '100%',
     maxWidth: 400,
+    overflow: 'hidden',
   },
   closeButton: {
     position: 'absolute',
