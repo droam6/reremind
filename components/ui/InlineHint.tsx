@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Animated } from 'react-native';
-import { COLORS, SPACING, FONT_SIZES, FONTS } from '../../constants/theme';
+import { SPACING, FONT_SIZES, FONTS } from '../../constants/theme';
+import { useTheme } from '../../hooks/useTheme';
 
 interface InlineHintProps {
   hintId: string;
@@ -9,6 +10,8 @@ interface InlineHintProps {
 }
 
 export function InlineHint({ hintId, text, onDismiss }: InlineHintProps) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -35,9 +38,9 @@ export function InlineHint({ hintId, text, onDismiss }: InlineHintProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
-    backgroundColor: '#1E1E1E',
+    backgroundColor: colors.surfaceLight,
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
@@ -51,11 +54,11 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: 2,
-    backgroundColor: COLORS.accent,
+    backgroundColor: colors.accent,
   },
   text: {
     flex: 1,
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     fontFamily: FONTS.light,
     lineHeight: 18,
@@ -68,7 +71,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   closeText: {
-    color: COLORS.textTertiary,
+    color: colors.textTertiary,
     fontSize: 20,
     lineHeight: 20,
   },

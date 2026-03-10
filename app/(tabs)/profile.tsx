@@ -64,6 +64,7 @@ export default function ProfileScreen() {
   const { cards, addCard, removeCard } = useCards();
   const { user, setIsPremium } = useUser();
   const { colors, isDark, setTheme } = useTheme();
+  const styles = createStyles(colors);
 
   // Modals
   const [showEditIncome, setShowEditIncome] = useState(false);
@@ -341,7 +342,7 @@ export default function ProfileScreen() {
                 }}
                 keyboardType="numeric"
                 placeholder="0"
-                placeholderTextColor={COLORS.textTertiary}
+                placeholderTextColor={colors.textTertiary}
               />
             </View>
 
@@ -402,7 +403,7 @@ export default function ProfileScreen() {
               value={cardLabel}
               onChangeText={setCardLabel}
               placeholder="e.g. Commonwealth Debit"
-              placeholderTextColor={COLORS.textTertiary}
+              placeholderTextColor={colors.textTertiary}
             />
 
             <Text style={[styles.modalLabel, { marginTop: 20 }]}>LAST 4 DIGITS (OPTIONAL)</Text>
@@ -412,7 +413,7 @@ export default function ProfileScreen() {
               onChangeText={(t) => setCardLastFour(t.replace(/[^0-9]/g, '').slice(0, 4))}
               keyboardType="numeric"
               placeholder="1234"
-              placeholderTextColor={COLORS.textTertiary}
+              placeholderTextColor={colors.textTertiary}
               maxLength={4}
             />
 
@@ -474,17 +475,17 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   content: {
     paddingHorizontal: SPACING.lg,
     paddingBottom: 80,
   },
   header: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.h2,
     fontFamily: FONTS.medium,
     textTransform: 'uppercase',
@@ -493,7 +494,7 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xl,
   },
   sectionLabel: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.caption,
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -502,7 +503,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.regular,
   },
   card: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     borderRadius: BORDER_RADIUS.sharp,
     padding: 20,
   },
@@ -531,30 +532,30 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.light,
   },
   cardRowLabel: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.light,
   },
   cardRowValue: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.light,
   },
   cardRowValueBold: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.regular,
   },
   cardSep: {
     height: 1,
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: colors.surfaceLight,
     marginVertical: SPACING.xs,
   },
   editLink: {
     paddingVertical: SPACING.md,
   },
   editLinkText: {
-    color: COLORS.accent,
+    color: colors.accent,
     fontSize: FONT_SIZES.bodySmall,
     fontFamily: FONTS.regular,
   },
@@ -562,7 +563,7 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xs,
   },
   cardItem: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     borderRadius: BORDER_RADIUS.sharp,
     flexDirection: 'row',
     alignItems: 'center',
@@ -573,12 +574,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardItemLabel: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.body,
     marginBottom: SPACING.xs,
   },
   cardItemDigits: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.caption,
   },
   cardItemDelete: {
@@ -588,33 +589,33 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cardItemDeleteText: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.h2,
     lineHeight: FONT_SIZES.h2,
   },
   emptyText: {
-    color: COLORS.textTertiary,
+    color: colors.textTertiary,
     fontSize: FONT_SIZES.bodySmall,
     paddingVertical: SPACING.md,
   },
   comingSoon: {
-    color: COLORS.textTertiary,
+    color: colors.textTertiary,
     fontSize: FONT_SIZES.caption,
   },
   premiumBadge: {
     borderWidth: 1,
-    borderColor: COLORS.accent,
+    borderColor: colors.accent,
     borderRadius: BORDER_RADIUS.subtle,
     paddingHorizontal: SPACING.sm,
     paddingVertical: 2,
   },
   premiumBadgeText: {
-    color: COLORS.accent,
+    color: colors.accent,
     fontSize: FONT_SIZES.caption,
     fontFamily: FONTS.regular,
   },
   dangerText: {
-    color: COLORS.danger,
+    color: colors.danger,
     fontSize: FONT_SIZES.body,
   },
   footer: {
@@ -623,14 +624,14 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.xl,
   },
   footerBrand: {
-    color: COLORS.textTertiary,
+    color: colors.textTertiary,
     fontSize: FONT_SIZES.caption,
     textTransform: 'uppercase',
     letterSpacing: 4,
     marginBottom: SPACING.xs,
   },
   footerVersion: {
-    color: COLORS.textTertiary,
+    color: colors.textTertiary,
     fontSize: FONT_SIZES.caption,
   },
   devModeToggle: {
@@ -642,7 +643,7 @@ const styles = StyleSheet.create({
     gap: SPACING.xs,
   },
   devModeText: {
-    color: COLORS.textTertiary,
+    color: colors.textTertiary,
     fontSize: FONT_SIZES.caption,
     fontFamily: FONTS.light,
   },
@@ -650,14 +651,14 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: COLORS.accent,
+    backgroundColor: colors.accent,
   },
   loadDemoButton: {
     marginTop: SPACING.sm,
     paddingVertical: SPACING.sm,
   },
   loadDemoText: {
-    color: COLORS.accent,
+    color: colors.accent,
     fontSize: FONT_SIZES.caption,
     fontFamily: FONTS.light,
     textAlign: 'center',
@@ -672,22 +673,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
   },
   modal: {
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: colors.surfaceLight,
     borderRadius: BORDER_RADIUS.sharp,
     padding: SPACING.lg,
     width: '100%',
     maxWidth: 400,
   },
   modalLabel: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.caption,
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginBottom: SPACING.sm,
   },
   modalInput: {
-    backgroundColor: COLORS.surface,
-    color: COLORS.text,
+    backgroundColor: colors.surface,
+    color: colors.text,
     fontSize: FONT_SIZES.body,
     height: 48,
     paddingHorizontal: SPACING.md,
@@ -699,20 +700,20 @@ const styles = StyleSheet.create({
   amountContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     height: 56,
     paddingHorizontal: SPACING.md,
     borderRadius: BORDER_RADIUS.sharp,
   },
   dollarSign: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: 24,
     fontFamily: FONTS.regular,
     marginRight: SPACING.xs,
   },
   amountInput: {
     flex: 1,
-    color: COLORS.text,
+    color: colors.text,
     fontSize: 24,
     fontFamily: FONTS.regular,
     height: 56,
@@ -728,7 +729,7 @@ const styles = StyleSheet.create({
   freqButton: {
     flex: 1,
     height: 48,
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     borderRadius: BORDER_RADIUS.button,
     alignItems: 'center',
     justifyContent: 'center',
@@ -736,15 +737,15 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   freqButtonSelected: {
-    borderColor: COLORS.accent,
+    borderColor: colors.accent,
   },
   freqText: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.bodySmall,
     fontFamily: FONTS.light,
   },
   freqTextSelected: {
-    color: COLORS.accent,
+    color: colors.accent,
   },
   modalActions: {
     flexDirection: 'row',
@@ -760,12 +761,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cancelText: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.light,
   },
   saveBtn: {
-    backgroundColor: COLORS.accent,
+    backgroundColor: colors.accent,
     height: 48,
     paddingHorizontal: SPACING.xl,
     borderRadius: BORDER_RADIUS.button,
@@ -773,25 +774,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   saveText: {
-    color: COLORS.black,
+    color: colors.black,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.regular,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
   resetTitle: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.h3,
     fontFamily: FONTS.regular,
     marginBottom: SPACING.sm,
   },
   resetDesc: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.body,
     marginBottom: SPACING.md,
   },
   resetBtn: {
-    backgroundColor: COLORS.danger,
+    backgroundColor: colors.danger,
     height: 48,
     paddingHorizontal: SPACING.xl,
     borderRadius: BORDER_RADIUS.button,
@@ -799,7 +800,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   resetBtnText: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.regular,
     textTransform: 'uppercase',
