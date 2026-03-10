@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   selectorText: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.medium,
+    fontFamily: FONTS.light,
   },
   selectorPlaceholder: {
     color: COLORS.textTertiary,
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   },
   modalItemSelected: {
     color: '#C9A84C',
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
   modalItemDisabled: {
     color: COLORS.textTertiary,

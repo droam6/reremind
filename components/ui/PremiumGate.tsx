@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
   title: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h2,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     textAlign: 'center',
     marginBottom: SPACING.md,
   },
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
   price: {
     color: COLORS.accent,
     fontSize: FONT_SIZES.h3,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     textAlign: 'center',
     marginBottom: SPACING.xl,
   },
@@ -68,6 +68,6 @@ const styles = StyleSheet.create({
   dismissText: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.medium,
+    fontFamily: FONTS.light,
   },
 });

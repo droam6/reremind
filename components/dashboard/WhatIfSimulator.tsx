@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   collapsedText: {
     color: COLORS.accent,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
   chevron: {
     color: COLORS.textSecondary,
@@ -185,14 +185,14 @@ const styles = StyleSheet.create({
   dollarSign: {
     color: COLORS.text,
     fontSize: 28,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     marginRight: SPACING.xs,
   },
   amountInput: {
     flex: 1,
     color: COLORS.text,
     fontSize: 28,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     height: 56,
     padding: 0,
     outlineStyle: 'none',
@@ -217,10 +217,10 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   impactAmount: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
   impactBold: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     color: COLORS.text,
   },
   statusMessage: {
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   },
   miniRingAmount: {
     fontSize: 11,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
   closeButton: {
     alignItems: 'center',
@@ -240,6 +240,6 @@ const styles = StyleSheet.create({
   closeText: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.medium,
+    fontFamily: FONTS.light,
   },
 });

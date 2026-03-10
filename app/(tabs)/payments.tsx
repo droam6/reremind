@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
   title: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h2,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.medium,
     textTransform: 'uppercase',
     letterSpacing: 2,
     marginBottom: SPACING.xs,
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   cardName: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     marginBottom: SPACING.xs,
   },
   cardDetail: {
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   cardAmount: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h3,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
   splitCaption: {
     color: COLORS.textTertiary,
@@ -333,17 +333,17 @@ const styles = StyleSheet.create({
   confirmCancel: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.caption,
-    fontFamily: FONTS.medium,
+    fontFamily: FONTS.light,
   },
   confirmYes: {
     color: COLORS.danger,
     fontSize: FONT_SIZES.caption,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
   emptyTitle: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.h3,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     marginBottom: SPACING.sm,
   },
   emptySubtitle: {
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
   emptyButtonText: {
     color: COLORS.black,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
   fab: {
     position: 'absolute',

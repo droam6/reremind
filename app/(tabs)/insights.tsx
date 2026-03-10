@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   pageTitle: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h2,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     textTransform: 'uppercase',
     letterSpacing: 2,
     paddingTop: 48,
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   statNumber: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h3,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     marginBottom: SPACING.xs,
   },
   statLabel: {
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   streakText: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
   streakBest: {
     color: COLORS.textSecondary,
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
   chartOverlayTitle: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     marginBottom: SPACING.sm,
     textAlign: 'center',
   },
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
   premiumButtonText: {
     color: COLORS.black,
     fontSize: FONT_SIZES.bodySmall,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
   bnplAmount: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h3,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
   bnplValue: {
     color: COLORS.text,

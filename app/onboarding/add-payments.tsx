@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   heading: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h1,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.medium,
     marginBottom: SPACING.sm,
   },
   subheading: {
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
   paymentName: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     marginBottom: SPACING.xs,
   },
   paymentAmount: {
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: COLORS.accent,
     fontSize: FONT_SIZES.bodySmall,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
   bottom: {
     paddingHorizontal: SPACING.lg,
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: COLORS.black,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },

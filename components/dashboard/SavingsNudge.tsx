@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   title: {
     color: COLORS.accent,
     fontSize: FONT_SIZES.h2,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     textAlign: 'center',
     marginBottom: SPACING.md,
   },
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   },
   goldBold: {
     color: COLORS.accent,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
   subtitle: {
     color: COLORS.textSecondary,
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     color: COLORS.black,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
   secondaryButton: {
     height: 48,

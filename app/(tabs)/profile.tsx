@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
   header: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h2,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.medium,
     textTransform: 'uppercase',
     letterSpacing: 2,
     paddingTop: SPACING.xxl + SPACING.md,
@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
   cardRowValueBold: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
   cardSep: {
     height: 1,
@@ -466,7 +466,7 @@ const styles = StyleSheet.create({
   editLinkText: {
     color: COLORS.accent,
     fontSize: FONT_SIZES.bodySmall,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
   cardList: {
     marginBottom: SPACING.xs,
@@ -521,7 +521,7 @@ const styles = StyleSheet.create({
   premiumBadgeText: {
     color: COLORS.accent,
     fontSize: FONT_SIZES.caption,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
   dangerText: {
     color: COLORS.danger,
@@ -588,14 +588,14 @@ const styles = StyleSheet.create({
   dollarSign: {
     color: COLORS.text,
     fontSize: 24,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     marginRight: SPACING.xs,
   },
   amountInput: {
     flex: 1,
     color: COLORS.text,
     fontSize: 24,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     height: 56,
     padding: 0,
     outlineStyle: 'none',
@@ -622,7 +622,7 @@ const styles = StyleSheet.create({
   freqText: {
     color: COLORS.text,
     fontSize: FONT_SIZES.bodySmall,
-    fontFamily: FONTS.medium,
+    fontFamily: FONTS.light,
   },
   freqTextSelected: {
     color: COLORS.accent,
@@ -643,7 +643,7 @@ const styles = StyleSheet.create({
   cancelText: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.medium,
+    fontFamily: FONTS.light,
   },
   saveBtn: {
     backgroundColor: COLORS.accent,
@@ -656,14 +656,14 @@ const styles = StyleSheet.create({
   saveText: {
     color: COLORS.black,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
   resetTitle: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h3,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     marginBottom: SPACING.sm,
   },
   resetDesc: {
@@ -682,7 +682,7 @@ const styles = StyleSheet.create({
   resetBtnText: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },

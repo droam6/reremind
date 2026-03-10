@@ -721,7 +721,7 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.body,
     marginBottom: SPACING.lg,
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.light,
   },
   setupButton: {
     backgroundColor: COLORS.accent,
@@ -734,7 +734,7 @@ const styles = StyleSheet.create({
   setupButtonText: {
     color: COLORS.black,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
@@ -769,22 +769,22 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 2,
     marginBottom: SPACING.sm,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
   ringNumber: {
     fontSize: 42,
-    fontFamily: FONTS.black,
+    fontFamily: FONTS.bold,
     marginBottom: SPACING.xs,
   },
   ringSub: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     marginBottom: SPACING.sm,
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.light,
   },
   statusBadge: {
     fontSize: FONT_SIZES.caption,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     textTransform: 'uppercase',
     letterSpacing: 3,
   },
@@ -808,12 +808,12 @@ const styles = StyleSheet.create({
   calendarDateNum: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
-    fontFamily: FONTS.medium,
+    fontFamily: FONTS.light,
     marginBottom: 4,
   },
   calendarDateNumToday: {
     color: COLORS.text,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
   todayDot: {
     width: 4,
@@ -844,7 +844,7 @@ const styles = StyleSheet.create({
   expandedSummaryText: {
     color: COLORS.accent,
     fontSize: FONT_SIZES.bodySmall,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
   expandedCard: {
     paddingVertical: 12,
@@ -860,12 +860,12 @@ const styles = StyleSheet.create({
   expandedName: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
   expandedAmount: {
     color: COLORS.accent,
     fontSize: FONT_SIZES.h3,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
   expandedCardBottom: {
     flexDirection: 'row',
@@ -932,7 +932,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 2,
     marginBottom: SPACING.md,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
 
   // Next payment card
@@ -961,18 +961,18 @@ const styles = StyleSheet.create({
   nextPaymentName: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     marginBottom: SPACING.xs,
   },
   nextPaymentDate: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.light,
   },
   nextPaymentAmount: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h3,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
   },
 
   // Week snapshot
@@ -989,7 +989,7 @@ const styles = StyleSheet.create({
   weekStatNumber: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h3,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     marginBottom: SPACING.xs,
   },
   weekStatLabel: {
@@ -1017,7 +1017,7 @@ const styles = StyleSheet.create({
   listRowName: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.light,
   },
   categoryBadge: {
     backgroundColor: COLORS.surfaceLight,
@@ -1042,7 +1042,7 @@ const styles = StyleSheet.create({
   listRowAmount: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.medium,
+    fontFamily: FONTS.light,
   },
   splitCaption: {
     color: COLORS.textTertiary,
@@ -1065,12 +1065,12 @@ const styles = StyleSheet.create({
   summaryLabel: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.light,
   },
   summaryValue: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.light,
   },
 
   // Tip card
@@ -1081,7 +1081,7 @@ const styles = StyleSheet.create({
   tipLabel: {
     color: COLORS.accent,
     fontSize: FONT_SIZES.caption,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     textTransform: 'uppercase',
     letterSpacing: 2,
     marginBottom: SPACING.sm,
@@ -1090,7 +1090,7 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     lineHeight: 20,
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.light,
   },
 
   bottomPad: {

@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   heading: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h1,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.medium,
     marginBottom: SPACING.sm,
   },
   subheading: {
@@ -197,14 +197,14 @@ const styles = StyleSheet.create({
   dollarSign: {
     color: COLORS.text,
     fontSize: 36,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     marginRight: SPACING.xs,
   },
   amountInput: {
     flex: 1,
     color: COLORS.text,
     fontSize: 36,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     height: 64,
     padding: 0,
     outlineStyle: 'none',
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   frequencyText: {
     color: COLORS.text,
     fontSize: FONT_SIZES.bodySmall,
-    fontFamily: FONTS.medium,
+    fontFamily: FONTS.light,
   },
   frequencyTextSelected: {
     color: COLORS.accent,
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: COLORS.black,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },

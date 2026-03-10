@@ -78,13 +78,13 @@ const styles = StyleSheet.create({
   tagline: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.light,
     marginTop: SPACING.md,
   },
   subtitle: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.light,
     marginTop: SPACING.sm,
   },
   bottom: {
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: COLORS.black,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },

@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   questionText: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h2,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     marginBottom: SPACING.xl,
   },
   optionsContainer: {
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   summaryTitle: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h1,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     marginBottom: SPACING.md,
     textAlign: 'center',
   },
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: COLORS.black,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.regular,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },

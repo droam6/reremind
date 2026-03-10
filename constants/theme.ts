@@ -42,11 +42,11 @@ export const FONT_WEIGHTS = {
 };
 
 export const FONTS = {
-  light: 'Montserrat_300Light',
-  regular: 'Montserrat_400Regular',
-  medium: 'Montserrat_500Medium',
-  bold: 'Montserrat_700Bold',
-  black: 'Montserrat_900Black',
+  light: 'Montserrat_300Light',      // Body text, descriptions, captions - MAIN FONT
+  regular: 'Montserrat_400Regular',  // Subheadings, payment names, buttons, section headers
+  medium: 'Montserrat_500Medium',    // H1/H2 headings, tab bar labels
+  bold: 'Montserrat_700Bold',        // Hero number only (needs weight for readability)
+  black: 'Montserrat_900Black',      // Not used
 } as const;
 
 // Helper to get font family from weight
@@ -57,7 +57,7 @@ export function getFontFamily(weight: '300' | '400' | '500' | '700' | '900'): st
     case '500': return FONTS.medium;
     case '400': return FONTS.regular;
     case '300': return FONTS.light;
-    default: return FONTS.regular;
+    default: return FONTS.light;  // Default to light for elegant feel
   }
 }
 
