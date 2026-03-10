@@ -287,15 +287,18 @@ const styles = StyleSheet.create({
   },
   categoryBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: '#1E1E1E',
     paddingHorizontal: SPACING.sm,
     paddingVertical: 2,
     borderRadius: BORDER_RADIUS.subtle,
+    borderWidth: 1,
+    borderColor: '#2A2A2A',
   },
   categoryBadgeText: {
-    color: COLORS.textTertiary,
+    color: COLORS.textSecondary,
     fontSize: FONT_SIZES.caption,
     textTransform: 'uppercase',
+    fontFamily: FONTS.regular,
   },
   cardRight: {
     alignItems: 'flex-end',

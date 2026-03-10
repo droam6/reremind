@@ -656,7 +656,6 @@ export default function HomeScreen() {
       {/* 7.5. Daily Tip */}
       <View style={styles.section}>
         <View style={styles.tipCard}>
-          <Text style={styles.tipLabel}>TIP</Text>
           <Text style={styles.tipText}>{getTodaysTip()}</Text>
         </View>
       </View>
@@ -873,16 +872,18 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   expandedCategoryPill: {
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: '#1E1E1E',
     paddingHorizontal: SPACING.sm,
     paddingVertical: 1,
     borderRadius: BORDER_RADIUS.subtle,
+    borderWidth: 1,
+    borderColor: '#2A2A2A',
   },
   expandedCategoryText: {
-    color: COLORS.textTertiary,
+    color: COLORS.textSecondary,
     fontSize: 10,
     textTransform: 'uppercase',
-    fontFamily: FONTS.light,
+    fontFamily: FONTS.regular,
   },
   expandedFrequency: {
     color: COLORS.textSecondary,
@@ -1020,16 +1021,18 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.light,
   },
   categoryBadge: {
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: '#1E1E1E',
     paddingHorizontal: SPACING.sm,
     paddingVertical: 1,
     borderRadius: BORDER_RADIUS.subtle,
+    borderWidth: 1,
+    borderColor: '#2A2A2A',
   },
   categoryBadgeText: {
-    color: COLORS.textTertiary,
+    color: COLORS.textSecondary,
     fontSize: 10,
     textTransform: 'uppercase',
-    fontFamily: FONTS.light,
+    fontFamily: FONTS.regular,
   },
   listRowDate: {
     color: COLORS.textSecondary,
@@ -1076,7 +1079,8 @@ const styles = StyleSheet.create({
   // Tip card
   tipCard: {
     backgroundColor: COLORS.surface,
-    padding: 20,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
   },
   tipLabel: {
     color: COLORS.accent,
@@ -1091,6 +1095,7 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.bodySmall,
     lineHeight: 20,
     fontFamily: FONTS.light,
+    fontStyle: 'italic',
   },
 
   bottomPad: {

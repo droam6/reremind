@@ -430,6 +430,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     marginBottom: SPACING.sm,
     marginTop: SPACING.lg,
+    fontFamily: FONTS.regular,
   },
   card: {
     backgroundColor: COLORS.surface,
@@ -445,10 +446,12 @@ const styles = StyleSheet.create({
   cardRowLabel: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.body,
+    fontFamily: FONTS.light,
   },
   cardRowValue: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
+    fontFamily: FONTS.light,
   },
   cardRowValueBold: {
     color: COLORS.text,

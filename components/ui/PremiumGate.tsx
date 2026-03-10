@@ -53,11 +53,12 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.body,
     textAlign: 'center',
     marginBottom: SPACING.lg,
+    fontFamily: FONTS.light,
   },
   price: {
     color: COLORS.accent,
     fontSize: FONT_SIZES.h3,
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.light,
     textAlign: 'center',
     marginBottom: SPACING.xl,
   },

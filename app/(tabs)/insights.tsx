@@ -289,9 +289,10 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.caption,
   },
   streakEmpty: {
-    color: COLORS.textTertiary,
+    color: COLORS.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     textAlign: 'center',
+    fontFamily: FONTS.light,
   },
 
   // Chart placeholder
