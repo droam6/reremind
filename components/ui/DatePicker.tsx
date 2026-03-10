@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
   },
   modalCard: {
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: '#1E1E1E',
     borderRadius: BORDER_RADIUS.sharp,
     padding: 24,
     width: '100%',
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     maxHeight: '60%',
   },
   modalTitle: {
-    color: COLORS.textSecondary,
+    color: '#FFFFFF',
     fontSize: FONT_SIZES.caption,
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -276,12 +276,12 @@ const styles = StyleSheet.create({
     borderBottomColor: '#2A2A2A',
   },
   modalItemText: {
-    color: COLORS.text,
+    color: '#FFFFFF',
     fontSize: FONT_SIZES.body,
     textAlign: 'center',
   },
   modalItemSelected: {
-    color: COLORS.accent,
+    color: '#C9A84C',
     fontWeight: FONT_WEIGHTS.bold,
   },
   modalItemDisabled: {
