@@ -11,8 +11,25 @@ import {
 } from '@expo-google-fonts/montserrat';
 import { getUserProfile } from '../utils/storage';
 import { ErrorBoundary } from '../components/ui/ErrorBoundary';
+import { ThemeProvider, useThemeContext } from '../contexts/ThemeContext';
 
-export default function RootLayout() {
+// Component to update document background based on theme
+function DocumentBackground() {
+  const { colors } = useThemeContext();
+
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      document.documentElement.style.backgroundColor = colors.background;
+      document.body.style.backgroundColor = colors.background;
+      document.body.style.margin = '0';
+      document.body.style.overflow = 'hidden';
+    }
+  }, [colors.background]);
+
+  return null;
+}
+
+function RootLayoutContent() {
   const [showSplash, setShowSplash] = useState(true);
   const [ready, setReady] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
@@ -43,16 +60,6 @@ export default function RootLayout() {
     };
     loadData();
   }, [fontsLoaded]);
-
-  // Fix white backgrounds on web
-  useEffect(() => {
-    if (Platform.OS === 'web' && typeof document !== 'undefined') {
-      document.documentElement.style.backgroundColor = '#0A0A0A';
-      document.body.style.backgroundColor = '#0A0A0A';
-      document.body.style.margin = '0';
-      document.body.style.overflow = 'hidden';
-    }
-  }, []);
 
   useEffect(() => {
     // 300ms delay, then fade text in over 800ms
@@ -98,18 +105,29 @@ export default function RootLayout() {
   // Layered approach: Slot renders underneath, splash overlays on top
   // This eliminates the white flash between splash and content
   return (
-    <ErrorBoundary>
-      <View style={styles.root}>
-        <Slot />
-        {showSplash && (
-          <Animated.View style={[styles.splash, { opacity: splashOpacity }]} pointerEvents="none">
-            <Animated.Text style={[styles.splashText, { opacity: textOpacity }]}>
-              RE-REMIND
-            </Animated.Text>
-          </Animated.View>
-        )}
-      </View>
-    </ErrorBoundary>
+    <>
+      <DocumentBackground />
+      <ErrorBoundary>
+        <View style={styles.root}>
+          <Slot />
+          {showSplash && (
+            <Animated.View style={[styles.splash, { opacity: splashOpacity }]} pointerEvents="none">
+              <Animated.Text style={[styles.splashText, { opacity: textOpacity }]}>
+                RE-REMIND
+              </Animated.Text>
+            </Animated.View>
+          )}
+        </View>
+      </ErrorBoundary>
+    </>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <RootLayoutContent />
+    </ThemeProvider>
   );
 }
 

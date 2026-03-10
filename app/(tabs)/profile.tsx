@@ -12,11 +12,12 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
+import { SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
 import { IncomeFrequency } from '../../types/income';
 import { useIncome } from '../../hooks/useIncome';
 import { useCards } from '../../hooks/useCards';
 import { useUser } from '../../hooks/useUser';
+import { useTheme } from '../../hooks/useTheme';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatRelativeDate } from '../../utils/formatDate';
 import { generateId } from '../../utils/generateId';
@@ -62,6 +63,7 @@ export default function ProfileScreen() {
   const { income, reload: reloadIncome, saveIncome } = useIncome();
   const { cards, addCard, removeCard } = useCards();
   const { user, setIsPremium } = useUser();
+  const { colors, isDark, setTheme } = useTheme();
 
   // Modals
   const [showEditIncome, setShowEditIncome] = useState(false);
@@ -237,9 +239,49 @@ export default function ProfileScreen() {
       {/* Section 3: App */}
       <Text style={styles.sectionLabel}>APP</Text>
       <View style={styles.card}>
+        <View style={styles.cardRow}>
+          <Text style={[styles.cardRowValue, { color: colors.text }]}>Appearance</Text>
+          <View style={styles.themePills}>
+            <Pressable
+              style={[
+                styles.themePill,
+                isDark && styles.themePillActive,
+                { backgroundColor: isDark ? 'transparent' : colors.surface },
+              ]}
+              onPress={() => setTheme('dark')}
+            >
+              <Text
+                style={[
+                  styles.themePillText,
+                  { color: isDark ? colors.accent : colors.textSecondary },
+                ]}
+              >
+                Dark
+              </Text>
+            </Pressable>
+            <Pressable
+              style={[
+                styles.themePill,
+                !isDark && styles.themePillActive,
+                { backgroundColor: !isDark ? 'transparent' : colors.surface },
+              ]}
+              onPress={() => setTheme('light')}
+            >
+              <Text
+                style={[
+                  styles.themePillText,
+                  { color: !isDark ? colors.accent : colors.textSecondary },
+                ]}
+              >
+                Light
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+        <View style={[styles.cardSep, { backgroundColor: colors.separator }]} />
         <Pressable style={styles.cardRow}>
-          <Text style={styles.cardRowValue}>Notifications</Text>
-          <Text style={styles.comingSoon}>Coming soon</Text>
+          <Text style={[styles.cardRowValue, { color: colors.text }]}>Notifications</Text>
+          <Text style={[styles.comingSoon, { color: colors.textTertiary }]}>Coming soon</Text>
         </Pressable>
         <View style={styles.cardSep} />
         <Pressable style={styles.cardRow} onPress={handleExport}>
@@ -469,6 +511,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: SPACING.sm,
+  },
+  themePills: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+  },
+  themePill: {
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: BORDER_RADIUS.button,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  themePillActive: {
+    borderColor: '#C9A84C', // accent color
+  },
+  themePillText: {
+    fontSize: FONT_SIZES.bodySmall,
+    fontFamily: FONTS.light,
   },
   cardRowLabel: {
     color: COLORS.textSecondary,

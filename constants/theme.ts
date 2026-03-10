@@ -1,17 +1,5 @@
-export const COLORS = {
-  background: '#0A0A0A',
-  surface: '#141414',
-  surfaceLight: '#1E1E1E',
-  text: '#FFFFFF',
-  textSecondary: '#6B6B6B',
-  textTertiary: '#4A4A4A',
-  accent: '#C9A84C',
-  accentDim: '#8A7433',
-  danger: '#C44A4A',
-  warning: '#D4913A',
-  safe: '#FFFFFF',
-  black: '#000000',
-} as const;
+// COLORS are now provided by ThemeContext (see constants/themes.ts)
+// Import with: const { colors } = useTheme();
 
 export const SPACING = {
   xs: 4,
