@@ -1,7 +1,6 @@
 import { View, Text, StyleSheet, Pressable, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
-import { useTheme } from '../../hooks/useTheme';
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
 import { useOnboarding } from './OnboardingContext';
 import { useIncome } from '../../hooks/useIncome';
 import { useUser } from '../../hooks/useUser';
@@ -32,8 +31,6 @@ function getCycleDays(freq: string): number {
 
 export default function ConfirmationScreen() {
   const router = useRouter();
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
   const { income: onboardingIncome, payments } = useOnboarding();
   const { saveIncome } = useIncome();
   const { completeOnboarding } = useUser();
@@ -143,19 +140,19 @@ export default function ConfirmationScreen() {
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: COLORS.background,
   },
   progressTrack: {
     height: 2,
-    backgroundColor: colors.surface,
+    backgroundColor: COLORS.surface,
     marginTop: SPACING.xxl,
   },
   progressFill: {
     height: 2,
-    backgroundColor: colors.accent,
+    backgroundColor: COLORS.accent,
   },
   content: {
     flex: 1,
@@ -163,18 +160,18 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingTop: SPACING.xxl,
   },
   heading: {
-    color: colors.text,
+    color: COLORS.text,
     fontSize: FONT_SIZES.h1,
     fontFamily: FONTS.medium,
     marginBottom: SPACING.sm,
   },
   subheading: {
-    color: colors.textSecondary,
+    color: COLORS.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     marginBottom: SPACING.xl,
   },
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.sharp,
     padding: SPACING.lg,
     marginBottom: SPACING.lg,
@@ -186,21 +183,21 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingVertical: SPACING.sm,
   },
   cardLabel: {
-    color: colors.textSecondary,
+    color: COLORS.textSecondary,
     fontSize: FONT_SIZES.body,
   },
   cardValue: {
-    color: colors.text,
+    color: COLORS.text,
     fontSize: FONT_SIZES.body,
   },
   cardValueBold: {
-    color: colors.text,
+    color: COLORS.text,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.regular,
   },
   cardSeparator: {
     height: 1,
-    backgroundColor: colors.background,
+    backgroundColor: COLORS.background,
     marginVertical: SPACING.sm,
   },
   heroPreview: {
@@ -208,20 +205,20 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingVertical: SPACING.xl,
   },
   heroLabel: {
-    color: colors.textSecondary,
+    color: COLORS.textSecondary,
     fontSize: FONT_SIZES.caption,
     textTransform: 'uppercase',
     letterSpacing: 2,
     marginBottom: SPACING.sm,
   },
   heroNumber: {
-    color: colors.accent,
+    color: COLORS.accent,
     fontSize: FONT_SIZES.h1,
     fontFamily: FONTS.regular,
     marginBottom: SPACING.xs,
   },
   heroSub: {
-    color: colors.textSecondary,
+    color: COLORS.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
   },
   bottom: {
@@ -229,14 +226,14 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingBottom: SPACING.xxl,
   },
   button: {
-    backgroundColor: colors.accent,
+    backgroundColor: COLORS.accent,
     height: 56,
     borderRadius: BORDER_RADIUS.button,
     alignItems: 'center',
     justifyContent: 'center',
   },
   buttonText: {
-    color: colors.black,
+    color: COLORS.black,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.regular,
     textTransform: 'uppercase',

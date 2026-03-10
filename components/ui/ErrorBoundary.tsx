@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { DARK_THEME } from '../../constants/themes';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -51,27 +52,27 @@ export class ErrorBoundary extends React.Component<
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0A',
+    backgroundColor: DARK_THEME.background,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
   title: {
-    color: '#FFFFFF',
+    color: DARK_THEME.text,
     fontSize: 22,
     fontWeight: '700',
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
-    color: '#6B6B6B',
+    color: DARK_THEME.textSecondary,
     fontSize: 14,
     textAlign: 'center',
     marginBottom: 32,
     maxWidth: 280,
   },
   button: {
-    backgroundColor: '#C9A84C',
+    backgroundColor: DARK_THEME.accent,
     height: 48,
     paddingHorizontal: 32,
     borderRadius: 2,
@@ -79,7 +80,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonText: {
-    color: '#000000',
+    color: DARK_THEME.black,
     fontSize: 16,
     fontWeight: '700',
     textTransform: 'uppercase',

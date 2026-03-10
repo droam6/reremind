@@ -2,7 +2,8 @@ import { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Svg, { Line, Circle, Path, Rect, Text as SvgText } from 'react-native-svg';
-import { COLORS, SPACING, FONT_SIZES, FONTS, BORDER_RADIUS } from '../../constants/theme';
+import { SPACING, FONT_SIZES, FONTS, BORDER_RADIUS } from '../../constants/theme';
+import { useTheme } from '../../hooks/useTheme';
 import { useLifetimeStats } from '../../hooks/useLifetimeStats';
 import { useCycleHistory } from '../../hooks/useCycleHistory';
 import { usePayments } from '../../hooks/usePayments';
@@ -42,9 +43,10 @@ interface LineChartProps {
   data: Array<{ date: string; value: number }>;
   width: number;
   height: number;
+  colors: any;
 }
 
-function LineChart({ data, width, height }: LineChartProps) {
+function LineChart({ data, width, height, colors }: LineChartProps) {
   if (data.length === 0) return null;
 
   const padding = { top: 20, right: 20, bottom: 30, left: 50 };
@@ -89,7 +91,7 @@ function LineChart({ data, width, height }: LineChartProps) {
   // Determine trend: gold if improving, amber if declining
   const firstValue = data[0]?.value || 0;
   const lastValue = data[data.length - 1]?.value || 0;
-  const lineColor = lastValue >= firstValue ? COLORS.accent : '#D4913A';
+  const lineColor = lastValue >= firstValue ? colors.accent : colors.warning;
 
   return (
     <Svg width={width} height={height}>
@@ -101,7 +103,7 @@ function LineChart({ data, width, height }: LineChartProps) {
           y1={line.y}
           x2={padding.left + chartWidth}
           y2={line.y}
-          stroke="#1A1A1A"
+          stroke={colors.ringTrack}
           strokeWidth="1"
         />
       ))}
@@ -132,7 +134,7 @@ function LineChart({ data, width, height }: LineChartProps) {
               key={`label-${i}`}
               x={getX(i)}
               y={padding.top + chartHeight + 20}
-              fill={COLORS.textTertiary}
+              fill={colors.textTertiary}
               fontSize="10"
               fontFamily={FONTS.light}
               textAnchor="middle"
@@ -150,7 +152,7 @@ function LineChart({ data, width, height }: LineChartProps) {
           key={`y-${i}`}
           x={padding.left - 10}
           y={line.y + 4}
-          fill={COLORS.textTertiary}
+          fill={colors.textTertiary}
           fontSize="10"
           fontFamily={FONTS.light}
           textAnchor="end"
@@ -221,9 +223,10 @@ interface BarChartProps {
   data: Array<{ label: string; income: number; committed: number }>;
   width: number;
   height: number;
+  colors: any;
 }
 
-function BarChart({ data, width, height }: BarChartProps) {
+function BarChart({ data, width, height, colors }: BarChartProps) {
   if (data.length === 0) return null;
 
   const padding = { top: 10, right: 20, bottom: 30, left: 20 };
@@ -248,7 +251,7 @@ function BarChart({ data, width, height }: BarChartProps) {
         y1={baselineY}
         x2={padding.left + chartWidth}
         y2={baselineY}
-        stroke="#2A2A2A"
+        stroke={colors.cardBorder}
         strokeWidth="1"
       />
 
@@ -271,7 +274,7 @@ function BarChart({ data, width, height }: BarChartProps) {
               y={incomeY}
               width={barWidth}
               height={incomeHeight}
-              fill={COLORS.accent}
+              fill={colors.accent}
               fillOpacity="0.3"
             />
             {/* Committed bar (solid) */}
@@ -281,14 +284,14 @@ function BarChart({ data, width, height }: BarChartProps) {
               y={committedY}
               width={barWidth}
               height={committedHeight}
-              fill={COLORS.accent}
+              fill={colors.accent}
             />
             {/* X-axis label */}
             <SvgText
               key={`label-${i}`}
               x={groupX + groupWidth / 2}
               y={baselineY + 20}
-              fill={COLORS.textTertiary}
+              fill={colors.textTertiary}
               fontSize="10"
               fontFamily={FONTS.light}
               textAnchor="middle"
@@ -303,6 +306,8 @@ function BarChart({ data, width, height }: BarChartProps) {
 }
 
 export default function InsightsScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const { user } = useUser();
   const { stats, loading: statsLoading, reload: reloadStats } = useLifetimeStats();
   const { history, loading: historyLoading, reload: reloadHistory } = useCycleHistory();
@@ -329,14 +334,14 @@ export default function InsightsScreen() {
 
   // Spending breakdown by category
   const categoryColors: Record<string, string> = {
-    rent: '#C9A84C',
-    utilities: '#8A7433',
-    subscriptions: '#6B6B6B',
-    bnpl: '#D4913A',
-    insurance: '#4A7C59',
-    transport: '#7C4A4A',
-    groceries: '#4A5A7C',
-    other: '#3A3A3A',
+    rent: colors.accent,
+    utilities: colors.accentDim,
+    subscriptions: colors.textSecondary,
+    bnpl: colors.warning,
+    insurance: colors.safe,
+    transport: colors.danger,
+    groceries: colors.textSecondary,
+    other: colors.textTertiary,
   };
 
   const spendingByCategory = payments.reduce((acc, p) => {
@@ -426,7 +431,7 @@ export default function InsightsScreen() {
         <Text style={styles.sectionHeader}>ALL TIME</Text>
         <View style={styles.statsCard}>
           <View style={styles.stat}>
-            <Text style={[styles.statNumber, { color: COLORS.accent }]}>
+            <Text style={[styles.statNumber, { color: colors.accent }]}>
               {formatCurrency(stats?.totalAmountWatched ?? 0)}
             </Text>
             <Text style={styles.statLabel}>bills watched</Text>
@@ -479,11 +484,11 @@ export default function InsightsScreen() {
             ) : (
               <>
                 <Text style={styles.chartTitle}>Money left on payday</Text>
-                <LineChart data={cycleChartData} width={340} height={200} />
+                <LineChart data={cycleChartData} width={340} height={200} colors={colors} />
                 <Text style={styles.chartCaption}>
                   Your average: {formatCurrency(averageRemaining)}/cycle
                 </Text>
-                <Text style={[styles.trendIndicator, { color: isImproving ? COLORS.accent : '#D4913A' }]}>
+                <Text style={[styles.trendIndicator, { color: isImproving ? colors.accent : '#D4913A' }]}>
                   {isImproving ? '↑' : '↓'} {isImproving ? 'Improving' : 'Declining'}
                 </Text>
               </>
@@ -575,14 +580,14 @@ export default function InsightsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>MONTH BY MONTH</Text>
           <View style={styles.chartContainer}>
-            <BarChart data={monthlyData} width={340} height={160} />
+            <BarChart data={monthlyData} width={340} height={160} colors={colors} />
             <View style={styles.barLegend}>
               <View style={styles.barLegendItem}>
-                <View style={[styles.barLegendDot, { backgroundColor: COLORS.accent, opacity: 0.3 }]} />
+                <View style={[styles.barLegendDot, { backgroundColor: colors.accent, opacity: 0.3 }]} />
                 <Text style={styles.barLegendText}>Income</Text>
               </View>
               <View style={styles.barLegendItem}>
-                <View style={[styles.barLegendDot, { backgroundColor: COLORS.accent }]} />
+                <View style={[styles.barLegendDot, { backgroundColor: colors.accent }]} />
                 <Text style={styles.barLegendText}>Committed</Text>
               </View>
             </View>
@@ -650,7 +655,7 @@ export default function InsightsScreen() {
           <View style={styles.bnplCard}>
             <View style={styles.bnplRow}>
               <Text style={styles.bnplLabel}>Estimated remaining</Text>
-              <Text style={[styles.bnplAmount, { color: COLORS.warning }]}>
+              <Text style={[styles.bnplAmount, { color: colors.warning }]}>
                 {formatCurrency(bnplPayments.reduce((sum, p) => {
                   // Rough estimate: 4 remaining instalments for fortnightly BNPL
                   const remaining = p.frequency === 'fortnightly' ? 4 : p.frequency === 'weekly' ? 8 : 2;
@@ -678,7 +683,7 @@ export default function InsightsScreen() {
             </Text>
             {secondLastCycle && cycleDiff !== 0 && (
               <Text style={styles.reportComparison}>
-                <Text style={{ color: isImproving ? COLORS.accent : '#D4913A' }}>
+                <Text style={{ color: isImproving ? colors.accent : '#D4913A' }}>
                   {isImproving ? '↑ ' : '↓ '}
                 </Text>
                 That's {formatCurrency(Math.abs(cycleDiff))} {isImproving ? 'more' : 'less'} than the cycle before
@@ -708,10 +713,10 @@ export default function InsightsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   content: {
     paddingHorizontal: SPACING.lg,
@@ -719,7 +724,7 @@ const styles = StyleSheet.create({
 
   // Header
   pageTitle: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.h2,
     fontFamily: FONTS.regular,
     textTransform: 'uppercase',
@@ -733,7 +738,7 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   sectionHeader: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.caption,
     textTransform: 'uppercase',
     letterSpacing: 2,
@@ -742,7 +747,7 @@ const styles = StyleSheet.create({
 
   // Lifetime stats
   statsCard: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     flexDirection: 'row',
     padding: 20,
   },
@@ -751,13 +756,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statNumber: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.h3,
     fontFamily: FONTS.regular,
     marginBottom: SPACING.xs,
   },
   statLabel: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.caption,
     textAlign: 'center',
     fontFamily: FONTS.light,
@@ -765,7 +770,7 @@ const styles = StyleSheet.create({
 
   // Streak
   streakCard: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     padding: 20,
   },
   streakRow: {
@@ -780,17 +785,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   streakText: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.light,
   },
   streakBest: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.caption,
     fontFamily: FONTS.light,
   },
   streakEmpty: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     textAlign: 'center',
     fontFamily: FONTS.light,
@@ -798,18 +803,18 @@ const styles = StyleSheet.create({
 
   // Chart container
   chartContainer: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     padding: 20,
     alignItems: 'center',
   },
   chartTitle: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     fontFamily: FONTS.light,
     marginBottom: SPACING.md,
   },
   chartCaption: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     fontFamily: FONTS.light,
     textAlign: 'center',
@@ -822,7 +827,7 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xs,
   },
   conversationalInsight: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     fontFamily: FONTS.light,
     fontStyle: 'italic',
@@ -838,7 +843,7 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.xl,
   },
   chartEmptyText: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.body,
     textAlign: 'center',
     fontFamily: FONTS.light,
@@ -846,7 +851,7 @@ const styles = StyleSheet.create({
 
   // Chart placeholder for free users
   chartPlaceholder: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     height: 200,
     overflow: 'hidden',
   },
@@ -864,7 +869,7 @@ const styles = StyleSheet.create({
   },
   fakeBar: {
     width: 24,
-    backgroundColor: COLORS.accent,
+    backgroundColor: colors.accent,
     borderRadius: 2,
   },
   chartOverlay: {
@@ -875,21 +880,21 @@ const styles = StyleSheet.create({
     padding: SPACING.lg,
   },
   chartOverlayTitle: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.regular,
     marginBottom: SPACING.sm,
     textAlign: 'center',
   },
   chartOverlayDesc: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     marginBottom: SPACING.lg,
     textAlign: 'center',
     fontFamily: FONTS.light,
   },
   premiumButton: {
-    backgroundColor: COLORS.accent,
+    backgroundColor: colors.accent,
     height: 44,
     paddingHorizontal: SPACING.xl,
     borderRadius: BORDER_RADIUS.button,
@@ -897,7 +902,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   premiumButtonText: {
-    color: COLORS.black,
+    color: colors.black,
     fontSize: FONT_SIZES.bodySmall,
     fontFamily: FONTS.regular,
     textTransform: 'uppercase',
@@ -916,12 +921,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   donutCenterAmount: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.h3,
     fontFamily: FONTS.bold,
   },
   donutCenterLabel: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.caption,
     fontFamily: FONTS.light,
     marginTop: 2,
@@ -941,7 +946,7 @@ const styles = StyleSheet.create({
     marginRight: SPACING.sm,
   },
   legendLabel: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.caption,
     fontFamily: FONTS.light,
     textTransform: 'capitalize',
@@ -950,13 +955,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   legendAmount: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.caption,
     fontFamily: FONTS.light,
     marginRight: SPACING.sm,
   },
   legendPercent: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.caption,
     fontFamily: FONTS.light,
     minWidth: 32,
@@ -981,14 +986,14 @@ const styles = StyleSheet.create({
     marginRight: SPACING.xs,
   },
   barLegendText: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.caption,
     fontFamily: FONTS.light,
   },
 
   // BNPL
   bnplCard: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     padding: 20,
   },
   bnplRow: {
@@ -998,22 +1003,22 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
   },
   bnplLabel: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.light,
   },
   bnplAmount: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.h3,
     fontFamily: FONTS.regular,
   },
   bnplValue: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.light,
   },
   bnplDetail: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.bodySmall,
     textAlign: 'right',
     flex: 1,
@@ -1022,11 +1027,11 @@ const styles = StyleSheet.create({
   },
   bnplSeparator: {
     height: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
     marginVertical: SPACING.xs,
   },
   debtCaption: {
-    color: COLORS.textTertiary,
+    color: colors.textTertiary,
     fontSize: FONT_SIZES.caption,
     marginTop: SPACING.sm,
     fontFamily: FONTS.light,
@@ -1034,26 +1039,26 @@ const styles = StyleSheet.create({
 
   // Report card
   reportCard: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     padding: 24,
     alignItems: 'center',
   },
   reportAmount: {
-    color: COLORS.accent,
+    color: colors.accent,
     fontSize: FONT_SIZES.h3,
     fontFamily: FONTS.bold,
     textAlign: 'center',
     marginBottom: SPACING.sm,
   },
   reportCoverage: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.light,
     textAlign: 'center',
     marginBottom: SPACING.sm,
   },
   reportComparison: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     fontFamily: FONTS.light,
     textAlign: 'center',

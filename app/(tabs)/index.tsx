@@ -2,13 +2,14 @@ import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Animated, Easing } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS, FONTS } from '../../constants/theme';
+import { SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS, FONTS } from '../../constants/theme';
 import { useIncome } from '../../hooks/useIncome';
 import { usePayments } from '../../hooks/usePayments';
 import { useCycleData } from '../../hooks/useCycleData';
 import { useCycleHistory } from '../../hooks/useCycleHistory';
 import { useLifetimeStats } from '../../hooks/useLifetimeStats';
 import { useUser } from '../../hooks/useUser';
+import { useTheme } from '../../hooks/useTheme';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatRelativeDate, formatCountdown, parseDate } from '../../utils/formatDate';
 import { capitalizeName } from '../../utils/capitalize';
@@ -26,39 +27,37 @@ const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-const RING_TRACK_COLOR = '#1A1A1A';
-
 function formatHeaderDate(): string {
   const now = new Date();
   return `${DAY_NAMES[now.getDay()]} ${now.getDate()} ${MONTH_NAMES[now.getMonth()]}`;
 }
 
-function getHealthColor(remaining: number, income: number): string {
-  if (income === 0) return COLORS.accent;
+function getHealthColor(remaining: number, income: number, colors: any): string {
+  if (income === 0) return colors.accent;
   const ratio = remaining / income;
-  if (ratio > 0.3) return COLORS.accent;
-  if (ratio > 0.1) return COLORS.warning;
-  return COLORS.danger;
+  if (ratio > 0.3) return colors.accent;
+  if (ratio > 0.1) return colors.warning;
+  return colors.danger;
 }
 
-function getStatusBadge(remaining: number, income: number): { label: string; color: string } {
-  if (remaining === 0) return { label: 'EMPTY', color: COLORS.danger };
-  if (income === 0) return { label: 'COMFORTABLE', color: COLORS.accent };
+function getStatusBadge(remaining: number, income: number, colors: any): { label: string; color: string } {
+  if (remaining === 0) return { label: 'EMPTY', color: colors.danger };
+  if (income === 0) return { label: 'COMFORTABLE', color: colors.accent };
   const ratio = remaining / income;
-  if (ratio > 0.3) return { label: 'COMFORTABLE', color: COLORS.accent };
-  if (ratio > 0.1) return { label: 'CAREFUL', color: COLORS.warning };
-  return { label: 'TIGHT', color: COLORS.danger };
+  if (ratio > 0.3) return { label: 'COMFORTABLE', color: colors.accent };
+  if (ratio > 0.1) return { label: 'CAREFUL', color: colors.warning };
+  return { label: 'TIGHT', color: colors.danger };
 }
 
-function getDotColor(count: number): string | null {
+function getDotColor(count: number, colors: any): string | null {
   if (count === 0) return null;
-  if (count === 1) return COLORS.accent;
-  if (count === 2) return COLORS.warning;
-  return COLORS.danger;
+  if (count === 1) return colors.accent;
+  if (count === 2) return colors.warning;
+  return colors.danger;
 }
 
-function getHeatColor(total: number): string {
-  if (total === 0) return '#141414';
+function getHeatColor(total: number, colors: any): string {
+  if (total === 0) return colors.surface;
   if (total <= 50) return '#2A2215';
   if (total <= 200) return '#3D3018';
   if (total <= 500) return 'rgba(212, 145, 58, 0.4)';
@@ -105,6 +104,8 @@ export default function HomeScreen() {
   // ALL hooks called unconditionally at the top — no early returns
   const router = useRouter();
   const { user } = useUser();
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const { income, loading: incomeLoading, reload: reloadIncome } = useIncome();
   const { payments, loading: paymentsLoading, reload: reloadPayments } = usePayments();
   const cycleData = useCycleData(income, payments);
@@ -282,11 +283,11 @@ export default function HomeScreen() {
 
   // Full dashboard derived values (safe defaults when data missing)
   const healthColor = hasDashboardData
-    ? getHealthColor(cycleData.remainingAfterBills, income.amount)
-    : COLORS.accent;
+    ? getHealthColor(cycleData.remainingAfterBills, income.amount, colors)
+    : colors.accent;
   const statusBadge = hasDashboardData
-    ? getStatusBadge(cycleData.remainingAfterBills, income.amount)
-    : { label: 'COMFORTABLE', color: COLORS.accent };
+    ? getStatusBadge(cycleData.remainingAfterBills, income.amount, colors)
+    : { label: 'COMFORTABLE', color: colors.accent };
   const ringProgress = hasDashboardData && income.amount > 0
     ? Math.min(1, Math.max(0, cycleData.remainingAfterBills / income.amount))
     : 1;
@@ -441,17 +442,17 @@ export default function HomeScreen() {
             size={240}
             strokeWidth={10}
             trackStrokeWidth={8}
-            color={COLORS.accent}
-            trackColor={RING_TRACK_COLOR}
+            color={colors.accent}
+            trackColor={colors.ringTrack}
           >
             <Text style={styles.ringLabel}>LEFT AFTER BILLS</Text>
-            <Text style={[styles.ringNumber, { color: COLORS.accent }]}>
+            <Text style={[styles.ringNumber, { color: colors.accent }]}>
               {formatCurrency(income.amount)}
             </Text>
             <Text style={styles.ringSub}>
               {cycleData ? formatCountdown(cycleData.daysUntilPayday) : ''}
             </Text>
-            <Text style={[styles.statusBadge, { color: COLORS.accent }]}>
+            <Text style={[styles.statusBadge, { color: colors.accent }]}>
               COMFORTABLE
             </Text>
           </ProgressRing>
@@ -480,7 +481,7 @@ export default function HomeScreen() {
             strokeWidth={10}
             trackStrokeWidth={8}
             color={healthColor}
-            trackColor={RING_TRACK_COLOR}
+            trackColor={colors.ringTrack}
           >
             <Text style={styles.ringLabel}>LEFT AFTER BILLS</Text>
             <Text
@@ -519,7 +520,7 @@ export default function HomeScreen() {
           <Text style={styles.breakdownLabel}>Income</Text>
           <Text style={styles.breakdownAmountGold}>{formatCurrency(income.amount)}</Text>
         </View>
-        <View style={[styles.breakdownBar, { width: '100%', backgroundColor: COLORS.accent }]} />
+        <View style={[styles.breakdownBar, { width: '100%', backgroundColor: colors.accent }]} />
 
         <View style={styles.breakdownRow}>
           <Text style={styles.breakdownLabel}>Bills this cycle</Text>
@@ -530,7 +531,7 @@ export default function HomeScreen() {
             styles.breakdownBar,
             {
               width: `${Math.round((cycleData.totalCommitted / income.amount) * 100)}%`,
-              backgroundColor: COLORS.text,
+              backgroundColor: colors.text,
             },
           ]}
         />
@@ -538,7 +539,7 @@ export default function HomeScreen() {
         <View style={styles.breakdownSeparator} />
 
         <View style={styles.breakdownRow}>
-          <Text style={[styles.breakdownLabel, { color: COLORS.accent }]}>Left after bills</Text>
+          <Text style={[styles.breakdownLabel, { color: colors.accent }]}>Left after bills</Text>
           <Text style={styles.breakdownAmountGold}>{formatCurrency(cycleData.remainingAfterBills)}</Text>
         </View>
       </Animated.View>
@@ -547,7 +548,7 @@ export default function HomeScreen() {
       <Animated.View style={[styles.calendarStrip, { opacity: calendarOpacity }]}>
         {calendarDays.map((day) => {
           const dayInfo = dayPaymentMap.get(day.dateStr);
-          const dotColor = getDotColor(dayInfo?.payments.length ?? 0);
+          const dotColor = getDotColor(dayInfo?.payments.length ?? 0, colors);
           const hasDayPayments = (dayInfo?.payments.length ?? 0) > 0;
           return (
             <Pressable
@@ -626,7 +627,7 @@ export default function HomeScreen() {
               style={[
                 styles.heatCell,
                 {
-                  backgroundColor: getHeatColor(cell.total),
+                  backgroundColor: getHeatColor(cell.total, colors),
                   flex: 1,
                   marginLeft: i === 0 ? 0 : 1,
                 },
@@ -693,7 +694,7 @@ export default function HomeScreen() {
             <View style={styles.weekStat}>
               {hasCluster ? (
                 <>
-                  <Text style={[styles.weekStatNumber, { color: COLORS.warning }]}>
+                  <Text style={[styles.weekStatNumber, { color: colors.warning }]}>
                     {weekStats.busiest.count} on {busiestDayName}
                   </Text>
                   <Text style={styles.weekStatLabel}>busiest day</Text>
@@ -798,10 +799,10 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   centred: {
     alignItems: 'center',
@@ -813,13 +814,13 @@ const styles = StyleSheet.create({
     paddingTop: SPACING.md,
   },
   emptyText: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.body,
     marginBottom: SPACING.lg,
     fontFamily: FONTS.light,
   },
   setupButton: {
-    backgroundColor: COLORS.accent,
+    backgroundColor: colors.accent,
     height: 48,
     paddingHorizontal: SPACING.xl,
     borderRadius: BORDER_RADIUS.button,
@@ -827,14 +828,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   setupButtonText: {
-    color: COLORS.black,
+    color: colors.black,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.regular,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
   addPaymentsHint: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     textAlign: 'center',
     marginTop: SPACING.md,
@@ -847,7 +848,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerDate: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.caption,
     fontFamily: FONTS.light,
   },
@@ -859,7 +860,7 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.xl,
   },
   ringLabel: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.caption,
     textTransform: 'uppercase',
     letterSpacing: 2,
@@ -872,7 +873,7 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xs,
   },
   ringSub: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     marginBottom: SPACING.sm,
     fontFamily: FONTS.light,
@@ -886,7 +887,7 @@ const styles = StyleSheet.create({
 
   // Ring breakdown
   breakdownCard: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     paddingHorizontal: 20,
     paddingVertical: 16,
     marginHorizontal: SPACING.lg,
@@ -899,17 +900,17 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   breakdownLabel: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.light,
   },
   breakdownAmount: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.regular,
   },
   breakdownAmountGold: {
-    color: COLORS.accent,
+    color: colors.accent,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.bold,
   },
@@ -920,13 +921,13 @@ const styles = StyleSheet.create({
   },
   breakdownSeparator: {
     height: 1,
-    backgroundColor: COLORS.accent,
+    backgroundColor: colors.accent,
     marginVertical: 12,
   },
 
   // Pulse message
   pulseMessage: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     fontFamily: FONTS.light,
     fontStyle: 'italic',
@@ -947,26 +948,26 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
   },
   calendarDayLabel: {
-    color: COLORS.textTertiary,
+    color: colors.textTertiary,
     fontSize: FONT_SIZES.caption,
     marginBottom: SPACING.xs,
     fontFamily: FONTS.light,
   },
   calendarDateNum: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     fontFamily: FONTS.light,
     marginBottom: 4,
   },
   calendarDateNumToday: {
-    color: COLORS.text,
+    color: colors.text,
     fontFamily: FONTS.regular,
   },
   todayDot: {
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: COLORS.accent,
+    backgroundColor: colors.accent,
     marginBottom: 2,
   },
   paymentDot: {
@@ -978,7 +979,7 @@ const styles = StyleSheet.create({
 
   // Expanded day
   expandedDay: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     paddingHorizontal: SPACING.lg,
     overflow: 'hidden',
   },
@@ -986,10 +987,10 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.sm,
     marginBottom: SPACING.sm,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.surfaceLight,
+    borderBottomColor: colors.surfaceLight,
   },
   expandedSummaryText: {
-    color: COLORS.accent,
+    color: colors.accent,
     fontSize: FONT_SIZES.bodySmall,
     fontFamily: FONTS.regular,
   },
@@ -1005,12 +1006,12 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   expandedName: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.regular,
   },
   expandedAmount: {
-    color: COLORS.accent,
+    color: colors.accent,
     fontSize: FONT_SIZES.h3,
     fontFamily: FONTS.regular,
   },
@@ -1020,32 +1021,32 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   expandedCategoryPill: {
-    backgroundColor: '#1E1E1E',
+    backgroundColor: colors.surfaceLight,
     paddingHorizontal: SPACING.sm,
     paddingVertical: 1,
     borderRadius: BORDER_RADIUS.subtle,
     borderWidth: 1,
-    borderColor: '#2A2A2A',
+    borderColor: colors.cardBorder,
   },
   expandedCategoryText: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: 10,
     textTransform: 'uppercase',
     fontFamily: FONTS.regular,
   },
   expandedFrequency: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.caption,
     fontFamily: FONTS.light,
   },
   expandedDue: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.caption,
     fontFamily: FONTS.light,
   },
   expandedSeparator: {
     height: 1,
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: colors.surfaceLight,
   },
 
   // Heat map
@@ -1059,14 +1060,14 @@ const styles = StyleSheet.create({
   },
   heatCellToday: {
     borderTopWidth: 2,
-    borderTopColor: COLORS.text,
+    borderTopColor: colors.text,
   },
   heatLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   heatLabel: {
-    color: COLORS.textTertiary,
+    color: colors.textTertiary,
     fontSize: FONT_SIZES.caption,
     fontFamily: FONTS.light,
   },
@@ -1076,7 +1077,7 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   sectionHeader: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.caption,
     textTransform: 'uppercase',
     letterSpacing: 2,
@@ -1086,7 +1087,7 @@ const styles = StyleSheet.create({
 
   // Next payment card
   nextPaymentCard: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     borderRadius: 0,
     overflow: 'hidden',
   },
@@ -1095,7 +1096,7 @@ const styles = StyleSheet.create({
   },
   warningBar: {
     width: 2,
-    backgroundColor: COLORS.warning,
+    backgroundColor: colors.warning,
   },
   nextPaymentContent: {
     flex: 1,
@@ -1108,25 +1109,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   nextPaymentName: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.regular,
     marginBottom: SPACING.xs,
   },
   nextPaymentDate: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     fontFamily: FONTS.light,
   },
   nextPaymentAmount: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.h3,
     fontFamily: FONTS.regular,
   },
 
   // Week snapshot
   weekCard: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     flexDirection: 'row',
     padding: 20,
     borderRadius: 0,
@@ -1136,13 +1137,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   weekStatNumber: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.h3,
     fontFamily: FONTS.regular,
     marginBottom: SPACING.xs,
   },
   weekStatLabel: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.caption,
     fontFamily: FONTS.light,
   },
@@ -1164,26 +1165,26 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xs,
   },
   listRowName: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.light,
   },
   categoryBadge: {
-    backgroundColor: '#1E1E1E',
+    backgroundColor: colors.surfaceLight,
     paddingHorizontal: SPACING.sm,
     paddingVertical: 1,
     borderRadius: BORDER_RADIUS.subtle,
     borderWidth: 1,
-    borderColor: '#2A2A2A',
+    borderColor: colors.cardBorder,
   },
   categoryBadgeText: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: 10,
     textTransform: 'uppercase',
     fontFamily: FONTS.regular,
   },
   listRowDate: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.caption,
     fontFamily: FONTS.light,
   },
@@ -1191,19 +1192,19 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end' as const,
   },
   listRowAmount: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.light,
   },
   splitCaption: {
-    color: COLORS.textTertiary,
+    color: colors.textTertiary,
     fontSize: FONT_SIZES.caption,
     marginTop: 2,
     fontFamily: FONTS.light,
   },
   separator: {
     height: 1,
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: colors.surfaceLight,
   },
 
   // Cycle summary
@@ -1214,24 +1215,24 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
   },
   summaryLabel: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.light,
   },
   summaryValue: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.light,
   },
 
   // Tip card
   tipCard: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     paddingVertical: 16,
     paddingHorizontal: 20,
   },
   tipLabel: {
-    color: COLORS.accent,
+    color: colors.accent,
     fontSize: FONT_SIZES.caption,
     fontFamily: FONTS.regular,
     textTransform: 'uppercase',
@@ -1239,7 +1240,7 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   tipText: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     lineHeight: 20,
     fontFamily: FONTS.light,

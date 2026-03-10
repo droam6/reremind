@@ -1,14 +1,17 @@
 import { Tabs } from 'expo-router';
-import { COLORS, FONT_SIZES, FONTS } from '../../constants/theme';
+import { FONT_SIZES, FONTS } from '../../constants/theme';
+import { useTheme } from '../../hooks/useTheme';
 
 export default function TabLayout() {
+  const { colors } = useTheme();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        sceneContainerStyle: { backgroundColor: '#0A0A0A' },
+        sceneContainerStyle: { backgroundColor: colors.background },
         tabBarStyle: {
-          backgroundColor: COLORS.black,
+          backgroundColor: colors.tabBar,
           borderTopWidth: 0,
           elevation: 0,
           shadowOpacity: 0,
@@ -22,8 +25,8 @@ export default function TabLayout() {
           fontSize: FONT_SIZES.caption,
           letterSpacing: 1,
         },
-        tabBarActiveTintColor: COLORS.text,
-        tabBarInactiveTintColor: COLORS.textTertiary,
+        tabBarActiveTintColor: colors.text,
+        tabBarInactiveTintColor: colors.textTertiary,
         tabBarIcon: () => null,
         tabBarIconStyle: { display: 'none' },
       }}

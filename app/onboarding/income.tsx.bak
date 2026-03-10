@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Pressable, Animated, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
-import { useTheme } from '../../hooks/useTheme';
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
 import { IncomeFrequency } from '../../types/income';
 import { useOnboarding } from './OnboardingContext';
 import { useFadeIn, useProgressWidth } from '../../utils/animations';
@@ -15,8 +14,6 @@ const FREQUENCIES: { label: string; value: IncomeFrequency }[] = [
 ];
 
 export default function IncomeScreen() {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
   const router = useRouter();
   const { income, setIncomeAmount, setIncomeFrequency, setIncomeNextPayday } = useOnboarding();
   const [amountText, setAmountText] = useState(income.amount > 0 ? String(income.amount) : '');
@@ -82,7 +79,7 @@ export default function IncomeScreen() {
               onChangeText={handleAmountChange}
               keyboardType="numeric"
               placeholder="0"
-              placeholderTextColor={colors.textTertiary}
+              placeholderTextColor={COLORS.textTertiary}
             />
           </View>
         </View>
@@ -139,19 +136,19 @@ export default function IncomeScreen() {
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: COLORS.background,
   },
   progressTrack: {
     height: 2,
-    backgroundColor: colors.surface,
+    backgroundColor: COLORS.surface,
     marginTop: SPACING.xxl,
   },
   progressFill: {
     height: 2,
-    backgroundColor: colors.accent,
+    backgroundColor: COLORS.accent,
   },
   backButton: {
     paddingHorizontal: SPACING.lg,
@@ -160,7 +157,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     alignSelf: 'flex-start',
   },
   backText: {
-    color: colors.text,
+    color: COLORS.text,
     fontSize: FONT_SIZES.h2,
   },
   content: {
@@ -169,13 +166,13 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingTop: SPACING.md,
   },
   heading: {
-    color: colors.text,
+    color: COLORS.text,
     fontSize: FONT_SIZES.h1,
     fontFamily: FONTS.medium,
     marginBottom: SPACING.sm,
   },
   subheading: {
-    color: colors.textSecondary,
+    color: COLORS.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     marginBottom: SPACING.xl,
   },
@@ -183,7 +180,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   label: {
-    color: colors.textSecondary,
+    color: COLORS.textSecondary,
     fontSize: FONT_SIZES.caption,
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -192,20 +189,20 @@ const createStyles = (colors: any) => StyleSheet.create({
   amountContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: COLORS.surface,
     height: 64,
     paddingHorizontal: SPACING.md,
     borderRadius: BORDER_RADIUS.button,
   },
   dollarSign: {
-    color: colors.text,
+    color: COLORS.text,
     fontSize: 36,
     fontFamily: FONTS.regular,
     marginRight: SPACING.xs,
   },
   amountInput: {
     flex: 1,
-    color: colors.text,
+    color: COLORS.text,
     fontSize: 36,
     fontFamily: FONTS.regular,
     height: 64,
@@ -221,7 +218,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   frequencyButton: {
     flex: 1,
     height: 48,
-    backgroundColor: colors.surface,
+    backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.button,
     alignItems: 'center',
     justifyContent: 'center',
@@ -229,22 +226,22 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderColor: 'transparent',
   },
   frequencyButtonSelected: {
-    borderColor: colors.accent,
+    borderColor: COLORS.accent,
   },
   frequencyText: {
-    color: colors.text,
+    color: COLORS.text,
     fontSize: FONT_SIZES.bodySmall,
     fontFamily: FONTS.light,
   },
   frequencyTextSelected: {
-    color: colors.accent,
+    color: COLORS.accent,
   },
   bottom: {
     paddingHorizontal: SPACING.lg,
     paddingBottom: SPACING.xxl,
   },
   button: {
-    backgroundColor: colors.accent,
+    backgroundColor: COLORS.accent,
     height: 56,
     borderRadius: BORDER_RADIUS.button,
     alignItems: 'center',
@@ -254,7 +251,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     opacity: 0.3,
   },
   buttonText: {
-    color: colors.black,
+    color: COLORS.black,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.regular,
     textTransform: 'uppercase',

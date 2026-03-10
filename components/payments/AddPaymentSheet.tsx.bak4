@@ -12,8 +12,7 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
-import { SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
-import { useTheme } from '../../hooks/useTheme';
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
 import { Payment, PayFrequency, PaymentCategory } from '../../types/payment';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { PremiumGate } from '../ui/PremiumGate';
@@ -82,8 +81,6 @@ export function AddPaymentSheet({
   initialPayment,
   isPremium = false,
 }: AddPaymentSheetProps) {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [frequency, setFrequency] = useState<PayFrequency>('monthly');
@@ -269,7 +266,7 @@ export function AddPaymentSheet({
                 value={name}
                 onChangeText={(t) => setName(t.slice(0, 50))}
                 placeholder="e.g. Rent, Netflix, Afterpay"
-                placeholderTextColor={colors.textTertiary}
+                placeholderTextColor={COLORS.textTertiary}
                 maxLength={50}
               />
 
@@ -292,7 +289,7 @@ export function AddPaymentSheet({
                   }}
                   keyboardType="numeric"
                   placeholder="0"
-                  placeholderTextColor={colors.textTertiary}
+                  placeholderTextColor={COLORS.textTertiary}
                 />
               </View>
               {isSplit && !isNaN(parsedAmount) && parsedAmount > 0 && (
@@ -402,7 +399,7 @@ export function AddPaymentSheet({
 
 const SPACING_LG = SPACING.lg;
 
-const createStyles = (colors: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -418,7 +415,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingHorizontal: SPACING_LG,
   },
   modal: {
-    backgroundColor: colors.surfaceLight,
+    backgroundColor: COLORS.surfaceLight,
     padding: SPACING_LG,
     maxHeight: '85%',
     width: '100%',
@@ -436,12 +433,12 @@ const createStyles = (colors: any) => StyleSheet.create({
     zIndex: 1,
   },
   closeText: {
-    color: colors.textSecondary,
+    color: COLORS.textSecondary,
     fontSize: FONT_SIZES.h1,
     lineHeight: FONT_SIZES.h1,
   },
   label: {
-    color: colors.textSecondary,
+    color: COLORS.textSecondary,
     fontSize: FONT_SIZES.caption,
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -451,8 +448,8 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginTop: 20,
   },
   input: {
-    backgroundColor: colors.surface,
-    color: colors.text,
+    backgroundColor: COLORS.surface,
+    color: COLORS.text,
     fontSize: FONT_SIZES.body,
     height: 48,
     paddingHorizontal: SPACING.md,
@@ -464,20 +461,20 @@ const createStyles = (colors: any) => StyleSheet.create({
   amountContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: COLORS.surface,
     height: 56,
     paddingHorizontal: SPACING.md,
     borderRadius: BORDER_RADIUS.sharp,
   },
   dollarSign: {
-    color: colors.text,
+    color: COLORS.text,
     fontSize: 24,
     fontFamily: FONTS.regular,
     marginRight: SPACING.xs,
   },
   amountInput: {
     flex: 1,
-    color: colors.text,
+    color: COLORS.text,
     fontSize: 24,
     fontFamily: FONTS.regular,
     height: 56,
@@ -487,7 +484,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     outlineColor: 'transparent',
   } as any,
   shareText: {
-    color: colors.accent,
+    color: COLORS.accent,
     fontSize: FONT_SIZES.bodySmall,
     fontFamily: FONTS.regular,
     marginTop: SPACING.sm,
@@ -500,7 +497,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   freqButton: {
     paddingHorizontal: SPACING.md,
     height: 40,
-    backgroundColor: colors.surface,
+    backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.sharp,
     alignItems: 'center',
     justifyContent: 'center',
@@ -508,20 +505,20 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderColor: 'transparent',
   },
   freqButtonSelected: {
-    borderColor: colors.accent,
+    borderColor: COLORS.accent,
   },
   freqText: {
-    color: colors.text,
+    color: COLORS.text,
     fontSize: FONT_SIZES.bodySmall,
     fontFamily: FONTS.light,
   },
   freqTextSelected: {
-    color: colors.accent,
+    color: COLORS.accent,
   },
   categoryPill: {
     paddingHorizontal: SPACING.md,
     height: 32,
-    backgroundColor: colors.surface,
+    backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.subtle,
     alignItems: 'center',
     justifyContent: 'center',
@@ -529,16 +526,16 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderColor: 'transparent',
   },
   categoryPillSelected: {
-    borderColor: colors.accent,
+    borderColor: COLORS.accent,
   },
   categoryText: {
-    color: colors.text,
+    color: COLORS.text,
     fontSize: FONT_SIZES.caption,
     fontFamily: FONTS.light,
     textTransform: 'uppercase',
   },
   categoryTextSelected: {
-    color: colors.accent,
+    color: COLORS.accent,
   },
 
   // Split
@@ -546,35 +543,35 @@ const createStyles = (colors: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: colors.surface,
+    backgroundColor: COLORS.surface,
     height: 48,
     paddingHorizontal: SPACING.md,
     borderRadius: BORDER_RADIUS.sharp,
   },
   splitLabel: {
-    color: colors.text,
+    color: COLORS.text,
     fontSize: FONT_SIZES.body,
   },
   toggle: {
     width: 44,
     height: 24,
     borderRadius: 12,
-    backgroundColor: colors.background,
+    backgroundColor: COLORS.background,
     justifyContent: 'center',
     paddingHorizontal: 2,
   },
   toggleOn: {
-    backgroundColor: colors.accent,
+    backgroundColor: COLORS.accent,
   },
   toggleThumb: {
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: colors.textTertiary,
+    backgroundColor: COLORS.textTertiary,
   },
   toggleThumbOn: {
     alignSelf: 'flex-end',
-    backgroundColor: colors.black,
+    backgroundColor: COLORS.black,
   },
   splitCountRow: {
     flexDirection: 'row',
@@ -584,12 +581,12 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingHorizontal: SPACING.md,
   },
   splitCountLabel: {
-    color: colors.textSecondary,
+    color: COLORS.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
   },
   splitCountInput: {
-    backgroundColor: colors.surface,
-    color: colors.text,
+    backgroundColor: COLORS.surface,
+    color: COLORS.text,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.regular,
     width: 48,
@@ -618,12 +615,12 @@ const createStyles = (colors: any) => StyleSheet.create({
     justifyContent: 'center',
   },
   cancelText: {
-    color: colors.textSecondary,
+    color: COLORS.textSecondary,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.light,
   },
   saveButton: {
-    backgroundColor: colors.accent,
+    backgroundColor: COLORS.accent,
     height: 48,
     paddingHorizontal: SPACING.xl,
     borderRadius: BORDER_RADIUS.button,
@@ -634,7 +631,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     opacity: 0.3,
   },
   saveText: {
-    color: colors.black,
+    color: COLORS.black,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.regular,
     textTransform: 'uppercase',

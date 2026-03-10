@@ -1,10 +1,13 @@
 import { View, StyleSheet, Pressable, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
+import { SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
+import { useTheme } from '../../hooks/useTheme';
 import { useSlideUp, useFadeIn } from '../../utils/animations';
 
 export default function WelcomeScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
 
   const title = useSlideUp(200, 600, 20);
   const tagline = useSlideUp(500, 600, 20);
@@ -54,10 +57,10 @@ export default function WelcomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
     paddingHorizontal: SPACING.lg,
   },
   spacer: {
@@ -69,20 +72,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: 28,
     fontFamily: FONTS.heavy,
     letterSpacing: 6,
     textTransform: 'uppercase',
   },
   tagline: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.light,
     marginTop: SPACING.md,
   },
   subtitle: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     fontFamily: FONTS.light,
     marginTop: SPACING.sm,
@@ -91,14 +94,14 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.xxl,
   },
   button: {
-    backgroundColor: COLORS.accent,
+    backgroundColor: colors.accent,
     height: 56,
     borderRadius: BORDER_RADIUS.button,
     alignItems: 'center',
     justifyContent: 'center',
   },
   buttonText: {
-    color: COLORS.black,
+    color: colors.black,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.regular,
     textTransform: 'uppercase',

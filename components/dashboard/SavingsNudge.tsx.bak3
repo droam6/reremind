@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, Modal } from 'react-native';
-import { SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
-import { useTheme } from '../../hooks/useTheme';
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
 import { formatCurrency } from '../../utils/formatCurrency';
 import {
   getSavingsGoal,
@@ -17,8 +16,6 @@ interface SavingsNudgeProps {
 }
 
 export function SavingsNudge({ remainingOnPayday, onDismiss }: SavingsNudgeProps) {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
   const [visible, setVisible] = useState(false);
   const [previousGoal, setPreviousGoal] = useState<number | null>(null);
   const [phase, setPhase] = useState<'ask' | 'followup' | 'success' | 'comfort'>('ask');
@@ -141,7 +138,7 @@ export function SavingsNudge({ remainingOnPayday, onDismiss }: SavingsNudgeProps
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.7)',
@@ -150,7 +147,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingHorizontal: SPACING.lg,
   },
   card: {
-    backgroundColor: colors.surfaceLight,
+    backgroundColor: COLORS.surfaceLight,
     padding: SPACING.xl,
     borderRadius: BORDER_RADIUS.sharp,
     width: '100%',
@@ -158,30 +155,30 @@ const createStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    color: colors.accent,
+    color: COLORS.accent,
     fontSize: FONT_SIZES.h2,
     fontFamily: FONTS.regular,
     textAlign: 'center',
     marginBottom: SPACING.md,
   },
   body: {
-    color: colors.text,
+    color: COLORS.text,
     fontSize: FONT_SIZES.body,
     textAlign: 'center',
     marginBottom: SPACING.sm,
   },
   goldBold: {
-    color: colors.accent,
+    color: COLORS.accent,
     fontFamily: FONTS.regular,
   },
   subtitle: {
-    color: colors.textSecondary,
+    color: COLORS.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     textAlign: 'center',
     marginBottom: SPACING.xl,
   },
   primaryButton: {
-    backgroundColor: colors.accent,
+    backgroundColor: COLORS.accent,
     height: 48,
     width: '100%',
     borderRadius: BORDER_RADIUS.button,
@@ -190,7 +187,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   primaryButtonText: {
-    color: colors.black,
+    color: COLORS.black,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.regular,
   },
@@ -201,7 +198,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     justifyContent: 'center',
   },
   secondaryButtonText: {
-    color: colors.textSecondary,
+    color: COLORS.textSecondary,
     fontSize: FONT_SIZES.body,
   },
   messageCenter: {
@@ -209,12 +206,12 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingVertical: SPACING.lg,
   },
   checkmark: {
-    color: colors.accent,
+    color: COLORS.accent,
     fontSize: 48,
     marginBottom: SPACING.md,
   },
   messageText: {
-    color: colors.textSecondary,
+    color: COLORS.textSecondary,
     fontSize: FONT_SIZES.body,
     textAlign: 'center',
   },

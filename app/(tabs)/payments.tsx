@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Platform } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
+import { SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
+import { useTheme } from '../../hooks/useTheme';
 import { Payment, PayFrequency } from '../../types/payment';
 import { usePayments } from '../../hooks/usePayments';
 import { useUser } from '../../hooks/useUser';
@@ -34,6 +35,8 @@ function toMonthlyAmount(amount: number, freq: PayFrequency): number {
 }
 
 export default function PaymentsScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const { user } = useUser();
   const { payments, loading, addPayment, removePayment, updatePayment, reload } = usePayments();
   const [showSheet, setShowSheet] = useState(false);
@@ -234,10 +237,10 @@ export default function PaymentsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   centred: {
     alignItems: 'center',
@@ -249,7 +252,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
   },
   title: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.h2,
     fontFamily: FONTS.medium,
     textTransform: 'uppercase',
@@ -257,7 +260,7 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xs,
   },
   summary: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
   },
   list: {
@@ -268,7 +271,7 @@ const styles = StyleSheet.create({
     paddingTop: SPACING.sm,
   },
   card: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     borderRadius: BORDER_RADIUS.sharp,
     flexDirection: 'row',
     paddingHorizontal: 20,
@@ -279,27 +282,27 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardName: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.regular,
     marginBottom: SPACING.xs,
   },
   cardDetail: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.caption,
     marginBottom: SPACING.sm,
   },
   categoryBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: '#1E1E1E',
+    backgroundColor: colors.surfaceLight,
     paddingHorizontal: SPACING.sm,
     paddingVertical: 2,
     borderRadius: BORDER_RADIUS.subtle,
     borderWidth: 1,
-    borderColor: '#2A2A2A',
+    borderColor: colors.cardBorder,
   },
   categoryBadgeText: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.caption,
     textTransform: 'uppercase',
     fontFamily: FONTS.regular,
@@ -309,17 +312,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   cardAmount: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.h3,
     fontFamily: FONTS.regular,
   },
   splitCaption: {
-    color: COLORS.textTertiary,
+    color: colors.textTertiary,
     fontSize: FONT_SIZES.caption,
     marginTop: 2,
   },
   overdueText: {
-    color: COLORS.danger,
+    color: colors.danger,
   },
   deleteButton: {
     width: 44,
@@ -328,7 +331,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   deleteText: {
-    color: COLORS.textTertiary,
+    color: colors.textTertiary,
     fontSize: FONT_SIZES.h2,
     lineHeight: FONT_SIZES.h2,
   },
@@ -338,30 +341,30 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xs,
   },
   confirmCancel: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.caption,
     fontFamily: FONTS.light,
   },
   confirmYes: {
-    color: COLORS.danger,
+    color: colors.danger,
     fontSize: FONT_SIZES.caption,
     fontFamily: FONTS.regular,
   },
   emptyTitle: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.h3,
     fontFamily: FONTS.regular,
     marginBottom: SPACING.sm,
   },
   emptySubtitle: {
-    color: COLORS.textTertiary,
+    color: colors.textTertiary,
     fontSize: FONT_SIZES.bodySmall,
     textAlign: 'center',
     maxWidth: 280,
     marginBottom: SPACING.lg,
   },
   emptyButton: {
-    backgroundColor: COLORS.accent,
+    backgroundColor: colors.accent,
     height: 48,
     paddingHorizontal: SPACING.xl,
     borderRadius: BORDER_RADIUS.button,
@@ -369,7 +372,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emptyButtonText: {
-    color: COLORS.black,
+    color: colors.black,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.regular,
   },
@@ -380,7 +383,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: COLORS.accent,
+    backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -394,14 +397,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 20,
     height: 2.5,
-    backgroundColor: COLORS.black,
+    backgroundColor: colors.black,
     borderRadius: 1,
   },
   fabBarVertical: {
     position: 'absolute',
     width: 2.5,
     height: 20,
-    backgroundColor: COLORS.black,
+    backgroundColor: colors.black,
     borderRadius: 1,
   },
   bottomPad: {

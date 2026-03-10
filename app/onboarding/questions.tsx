@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Animated, Easing } from 'react-native';
 import { useRouter } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
+import { SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
+import { useTheme } from '../../hooks/useTheme';
 
 interface Question {
   text: string;
@@ -34,6 +35,8 @@ const QUESTIONS: Question[] = [
 
 export default function QuestionsScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [showSummary, setShowSummary] = useState(false);
@@ -217,19 +220,19 @@ export default function QuestionsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   progressTrack: {
     height: 2,
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     marginTop: SPACING.xxl,
   },
   progressFill: {
     height: 2,
-    backgroundColor: COLORS.accent,
+    backgroundColor: colors.accent,
   },
   content: {
     flex: 1,
@@ -237,7 +240,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   questionText: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.h2,
     fontFamily: FONTS.regular,
     marginBottom: SPACING.xl,
@@ -246,7 +249,7 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   optionButton: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     paddingVertical: 20,
     paddingHorizontal: SPACING.lg,
     borderRadius: 0,
@@ -254,17 +257,17 @@ const styles = StyleSheet.create({
     borderLeftColor: 'transparent',
   },
   optionButtonSelected: {
-    borderLeftColor: COLORS.accent,
+    borderLeftColor: colors.accent,
   },
   optionText: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.body,
   },
   optionTextSecondary: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
   },
   optionTextSelected: {
-    color: COLORS.text,
+    color: colors.text,
   },
   summaryCenter: {
     flex: 1,
@@ -273,14 +276,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
   },
   summaryTitle: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: FONT_SIZES.h1,
     fontFamily: FONTS.regular,
     marginBottom: SPACING.md,
     textAlign: 'center',
   },
   summaryBody: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: FONT_SIZES.body,
     textAlign: 'center',
     maxWidth: 300,
@@ -290,14 +293,14 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.xxl,
   },
   button: {
-    backgroundColor: COLORS.accent,
+    backgroundColor: colors.accent,
     height: 56,
     borderRadius: BORDER_RADIUS.button,
     alignItems: 'center',
     justifyContent: 'center',
   },
   buttonText: {
-    color: COLORS.black,
+    color: colors.black,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.regular,
     textTransform: 'uppercase',

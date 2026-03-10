@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
-import { useTheme } from '../../hooks/useTheme';
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
 import { Payment } from '../../types/payment';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { generateId } from '../../utils/generateId';
@@ -14,8 +13,6 @@ import { useFadeIn, useProgressWidth } from '../../utils/animations';
 
 export default function AddPaymentsScreen() {
   const router = useRouter();
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
   const { payments, addPayment, removePayment } = useOnboarding();
   const [showSheet, setShowSheet] = useState(false);
   const [showPremiumGate, setShowPremiumGate] = useState(false);
@@ -126,19 +123,19 @@ export default function AddPaymentsScreen() {
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: COLORS.background,
   },
   progressTrack: {
     height: 2,
-    backgroundColor: colors.surface,
+    backgroundColor: COLORS.surface,
     marginTop: SPACING.xxl,
   },
   progressFill: {
     height: 2,
-    backgroundColor: colors.accent,
+    backgroundColor: COLORS.accent,
   },
   backButton: {
     paddingHorizontal: SPACING.lg,
@@ -147,7 +144,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     alignSelf: 'flex-start',
   },
   backText: {
-    color: colors.text,
+    color: COLORS.text,
     fontSize: FONT_SIZES.h2,
   },
   content: {
@@ -159,13 +156,13 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingBottom: SPACING.lg,
   },
   heading: {
-    color: colors.text,
+    color: COLORS.text,
     fontSize: FONT_SIZES.h1,
     fontFamily: FONTS.medium,
     marginBottom: SPACING.sm,
   },
   subheading: {
-    color: colors.textSecondary,
+    color: COLORS.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     marginBottom: SPACING.lg,
   },
@@ -173,7 +170,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginBottom: SPACING.md,
   },
   paymentRow: {
-    backgroundColor: colors.surface,
+    backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.sharp,
     flexDirection: 'row',
     alignItems: 'center',
@@ -184,13 +181,13 @@ const createStyles = (colors: any) => StyleSheet.create({
     flex: 1,
   },
   paymentName: {
-    color: colors.text,
+    color: COLORS.text,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.regular,
     marginBottom: SPACING.xs,
   },
   paymentAmount: {
-    color: colors.textSecondary,
+    color: COLORS.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
   },
   removeButton: {
@@ -200,12 +197,12 @@ const createStyles = (colors: any) => StyleSheet.create({
     justifyContent: 'center',
   },
   removeText: {
-    color: colors.textSecondary,
+    color: COLORS.textSecondary,
     fontSize: FONT_SIZES.h2,
     lineHeight: FONT_SIZES.h2,
   },
   emptyText: {
-    color: colors.textTertiary,
+    color: COLORS.textTertiary,
     fontSize: FONT_SIZES.bodySmall,
     textAlign: 'center',
     paddingVertical: SPACING.xl,
@@ -215,7 +212,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center',
   },
   addButtonText: {
-    color: colors.accent,
+    color: COLORS.accent,
     fontSize: FONT_SIZES.bodySmall,
     fontFamily: FONTS.regular,
   },
@@ -224,14 +221,14 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingBottom: SPACING.xxl,
   },
   button: {
-    backgroundColor: colors.accent,
+    backgroundColor: COLORS.accent,
     height: 56,
     borderRadius: BORDER_RADIUS.button,
     alignItems: 'center',
     justifyContent: 'center',
   },
   buttonText: {
-    color: colors.black,
+    color: COLORS.black,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.regular,
     textTransform: 'uppercase',

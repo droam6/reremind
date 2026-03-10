@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Modal } from 'react-native';
-import { SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
-import { useTheme } from '../../hooks/useTheme';
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const YEARS = [2025, 2026, 2027, 2028];
@@ -44,8 +43,6 @@ interface DatePickerProps {
 type ModalType = 'day' | 'month' | 'year' | null;
 
 export function DatePicker({ value, onChange, label, placeholder, disablePast = false }: DatePickerProps) {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
   const now = new Date();
   const todayDay = now.getDate();
   const todayMonth = now.getMonth() + 1;
@@ -213,10 +210,10 @@ export function DatePicker({ value, onChange, label, placeholder, disablePast = 
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   wrapper: {},
   label: {
-    color: colors.textSecondary,
+    color: COLORS.textSecondary,
     fontSize: FONT_SIZES.caption,
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -228,7 +225,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   selector: {
     flex: 1,
-    backgroundColor: colors.surface,
+    backgroundColor: COLORS.surface,
     height: 48,
     borderRadius: BORDER_RADIUS.sharp,
     alignItems: 'center',
@@ -237,15 +234,15 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderColor: 'transparent',
   },
   selectorActive: {
-    borderColor: colors.accent,
+    borderColor: COLORS.accent,
   },
   selectorText: {
-    color: colors.text,
+    color: COLORS.text,
     fontSize: FONT_SIZES.body,
     fontFamily: FONTS.light,
   },
   selectorPlaceholder: {
-    color: colors.textTertiary,
+    color: COLORS.textTertiary,
   },
   overlay: {
     flex: 1,
@@ -288,7 +285,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontFamily: FONTS.regular,
   },
   modalItemDisabled: {
-    color: colors.textTertiary,
+    color: COLORS.textTertiary,
     opacity: 0.4,
   },
 });
