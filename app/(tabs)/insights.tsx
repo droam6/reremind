@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import Svg, { Line, Circle, Path, Text as SvgText } from 'react-native-svg';
+import Svg, { Line, Circle, Path, Rect, Text as SvgText } from 'react-native-svg';
 import { COLORS, SPACING, FONT_SIZES, FONTS, BORDER_RADIUS } from '../../constants/theme';
 import { useLifetimeStats } from '../../hooks/useLifetimeStats';
 import { useCycleHistory } from '../../hooks/useCycleHistory';
@@ -46,7 +46,7 @@ interface LineChartProps {
 function LineChart({ data, width, height }: LineChartProps) {
   if (data.length === 0) return null;
 
-  const padding = { top: 20, right: 20, bottom: 30, left: 40 };
+  const padding = { top: 20, right: 20, bottom: 30, left: 50 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
 
@@ -106,7 +106,7 @@ function LineChart({ data, width, height }: LineChartProps) {
       ))}
 
       {/* Area fill */}
-      <Path d={areaD} fill={lineColor} fillOpacity="0.1" />
+      <Path d={areaD} fill={lineColor} fillOpacity="0.06" />
 
       {/* Line */}
       <Path d={pathD} stroke={lineColor} strokeWidth="2" fill="none" />
@@ -175,43 +175,40 @@ function DonutChart({ data, size, strokeWidth }: DonutChartProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
 
-  let currentAngle = -90; // Start at top
+  // Add 2px gap between segments (in circumference units)
+  const gapSize = 2;
+  const totalGaps = data.length * gapSize;
+  const usableCircumference = circumference - totalGaps;
+
+  let cumulativeOffset = 0;
 
   return (
     <Svg width={size} height={size}>
       {data.map((segment, i) => {
         const percentage = segment.amount / total;
-        const angleSize = percentage * 360;
-        const endAngle = currentAngle + angleSize;
+        const segmentLength = percentage * usableCircumference;
 
-        // Convert angles to radians
-        const startRad = (currentAngle * Math.PI) / 180;
-        const endRad = (endAngle * Math.PI) / 180;
+        // strokeDasharray: [segmentLength, rest of circle]
+        const dashArray = `${segmentLength} ${circumference - segmentLength}`;
 
-        // Calculate path
-        const startX = center + radius * Math.cos(startRad);
-        const startY = center + radius * Math.sin(startRad);
-        const endX = center + radius * Math.cos(endRad);
-        const endY = center + radius * Math.sin(endRad);
+        // strokeDashoffset: rotate to position this segment after previous segments
+        // Start at top (12 o'clock) by offsetting by quarter circle
+        const dashOffset = -circumference / 4 + cumulativeOffset;
 
-        const largeArc = angleSize > 180 ? 1 : 0;
-
-        const pathD = [
-          `M ${center} ${center}`,
-          `L ${startX} ${startY}`,
-          `A ${radius} ${radius} 0 ${largeArc} 1 ${endX} ${endY}`,
-          'Z',
-        ].join(' ');
-
-        currentAngle = endAngle;
+        cumulativeOffset -= (segmentLength + gapSize);
 
         return (
-          <Path
+          <Circle
             key={i}
-            d={pathD}
+            cx={center}
+            cy={center}
+            r={radius}
             fill="none"
             stroke={segment.color}
             strokeWidth={strokeWidth}
+            strokeDasharray={dashArray}
+            strokeDashoffset={dashOffset}
+            strokeLinecap="butt"
           />
         );
       })}
@@ -228,63 +225,68 @@ interface BarChartProps {
 function BarChart({ data, width, height }: BarChartProps) {
   if (data.length === 0) return null;
 
-  const padding = { top: 20, right: 20, bottom: 30, left: 40 };
+  const padding = { top: 10, right: 20, bottom: 30, left: 20 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
 
   const maxValue = Math.max(...data.flatMap((d) => [d.income, d.committed]), 1000);
-  const barWidth = 20;
+  const barWidth = 24;
   const barGap = 4;
   const groupGap = 32;
   const groupWidth = barWidth * 2 + barGap;
   const totalGroupsWidth = groupWidth * data.length + groupGap * (data.length - 1);
   const startX = padding.left + (chartWidth - totalGroupsWidth) / 2;
 
+  const baselineY = padding.top + chartHeight;
+
   return (
     <Svg width={width} height={height}>
-      {/* Grid lines */}
-      {[0, 0.5, 1].map((ratio, i) => {
-        const y = padding.top + chartHeight * (1 - ratio);
-        return (
-          <Line
-            key={i}
-            x1={padding.left}
-            y1={y}
-            x2={padding.left + chartWidth}
-            y2={y}
-            stroke="#1A1A1A"
-            strokeWidth="1"
-          />
-        );
-      })}
+      {/* Baseline */}
+      <Line
+        x1={padding.left}
+        y1={baselineY}
+        x2={padding.left + chartWidth}
+        y2={baselineY}
+        stroke="#2A2A2A"
+        strokeWidth="1"
+      />
 
-      {/* Bars */}
+      {/* Bars and labels */}
       {data.map((group, i) => {
         const groupX = startX + i * (groupWidth + groupGap);
 
         const incomeHeight = (group.income / maxValue) * chartHeight;
         const committedHeight = (group.committed / maxValue) * chartHeight;
 
-        const incomeY = padding.top + chartHeight - incomeHeight;
-        const committedY = padding.top + chartHeight - committedHeight;
+        const incomeY = baselineY - incomeHeight;
+        const committedY = baselineY - committedHeight;
 
         return (
-          <View key={i}>
+          <>
             {/* Income bar (opacity) */}
-            <Path
-              d={`M ${groupX} ${incomeY} L ${groupX + barWidth} ${incomeY} L ${groupX + barWidth} ${padding.top + chartHeight} L ${groupX} ${padding.top + chartHeight} Z`}
+            <Rect
+              key={`income-${i}`}
+              x={groupX}
+              y={incomeY}
+              width={barWidth}
+              height={incomeHeight}
               fill={COLORS.accent}
               fillOpacity="0.3"
             />
             {/* Committed bar (solid) */}
-            <Path
-              d={`M ${groupX + barWidth + barGap} ${committedY} L ${groupX + barWidth + barGap + barWidth} ${committedY} L ${groupX + barWidth + barGap + barWidth} ${padding.top + chartHeight} L ${groupX + barWidth + barGap} ${padding.top + chartHeight} Z`}
+            <Rect
+              key={`committed-${i}`}
+              x={groupX + barWidth + barGap}
+              y={committedY}
+              width={barWidth}
+              height={committedHeight}
               fill={COLORS.accent}
             />
             {/* X-axis label */}
             <SvgText
+              key={`label-${i}`}
               x={groupX + groupWidth / 2}
-              y={padding.top + chartHeight + 20}
+              y={baselineY + 20}
               fill={COLORS.textTertiary}
               fontSize="10"
               fontFamily={FONTS.light}
@@ -292,7 +294,7 @@ function BarChart({ data, width, height }: BarChartProps) {
             >
               {group.label}
             </SvgText>
-          </View>
+          </>
         );
       })}
     </Svg>
@@ -353,16 +355,38 @@ export default function InsightsScreen() {
   spendingByCategory.sort((a, b) => b.amount - a.amount);
   const totalMonthlyCommitted = spendingByCategory.reduce((sum, c) => sum + c.amount, 0);
 
-  // Monthly comparison (last 3 months)
+  // Monthly comparison (last 3 months) - derive from cycle history
   const monthlyData: Array<{ label: string; income: number; committed: number }> = [];
   const now = new Date();
+
+  // Group cycles by month
+  const cyclesByMonth = new Map<string, typeof history>();
+  history.forEach((cycle) => {
+    const cycleDate = new Date(cycle.cycleEndDate);
+    const monthKey = `${cycleDate.getFullYear()}-${cycleDate.getMonth()}`;
+    if (!cyclesByMonth.has(monthKey)) {
+      cyclesByMonth.set(monthKey, []);
+    }
+    cyclesByMonth.get(monthKey)!.push(cycle);
+  });
+
   for (let i = 2; i >= 0; i--) {
     const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const monthLabel = MONTH_NAMES[monthDate.getMonth()];
+    const monthKey = `${monthDate.getFullYear()}-${monthDate.getMonth()}`;
+
+    // Get cycles for this month
+    const monthCycles = cyclesByMonth.get(monthKey) || [];
+
+    // Average committed amount for cycles in this month
+    const avgCommitted = monthCycles.length > 0
+      ? Math.round(monthCycles.reduce((sum, c) => sum + c.totalCommitted, 0) / monthCycles.length)
+      : totalMonthlyCommitted; // fallback to current if no data
+
     monthlyData.push({
       label: monthLabel,
-      income: 2100, // Simplified for demo
-      committed: totalMonthlyCommitted,
+      income: 2100,
+      committed: avgCommitted,
     });
   }
 
@@ -504,7 +528,7 @@ export default function InsightsScreen() {
                 <Text style={styles.donutCenterAmount}>
                   {formatCurrency(Math.round(totalMonthlyCommitted))}
                 </Text>
-                <Text style={styles.donutCenterLabel}>per month</Text>
+                <Text style={styles.donutCenterLabel}>/month</Text>
               </View>
             </View>
             <View style={styles.legend}>
