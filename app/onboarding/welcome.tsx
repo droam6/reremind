@@ -1,6 +1,6 @@
 import { View, StyleSheet, Pressable, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
 import { useSlideUp, useFadeIn } from '../../utils/animations';
 
 export default function WelcomeScreen() {
@@ -71,20 +71,20 @@ const styles = StyleSheet.create({
   title: {
     color: COLORS.text,
     fontSize: 28,
-    fontWeight: FONT_WEIGHTS.heavy,
+    fontFamily: FONTS.heavy,
     letterSpacing: 6,
     textTransform: 'uppercase',
   },
   tagline: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.regular,
+    fontFamily: FONTS.regular,
     marginTop: SPACING.md,
   },
   subtitle: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
-    fontWeight: FONT_WEIGHTS.regular,
+    fontFamily: FONTS.regular,
     marginTop: SPACING.sm,
   },
   bottom: {
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: COLORS.black,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },

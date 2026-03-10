@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, Modal } from 'react-native';
-import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
 import { formatCurrency } from '../../utils/formatCurrency';
 import {
   getSavingsGoal,
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   title: {
     color: COLORS.accent,
     fontSize: FONT_SIZES.h2,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     textAlign: 'center',
     marginBottom: SPACING.md,
   },
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   },
   goldBold: {
     color: COLORS.accent,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
   },
   subtitle: {
     color: COLORS.textSecondary,
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     color: COLORS.black,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
   },
   secondaryButton: {
     height: 48,

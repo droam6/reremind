@@ -2,7 +2,7 @@ import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Animated, Easing } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS, FONTS } from '../../constants/theme';
 import { useIncome } from '../../hooks/useIncome';
 import { usePayments } from '../../hooks/usePayments';
 import { useCycleData } from '../../hooks/useCycleData';
@@ -91,8 +91,8 @@ function freqLabel(freq: string): string {
 }
 
 // Height per payment card in expanded day detail
-const EXPANDED_BASE_HEIGHT = 120;
-const EXPANDED_EXTRA_PER_PAYMENT = 80;
+const EXPANDED_BASE_HEIGHT = 70;
+const EXPANDED_EXTRA_PER_PAYMENT = 50;
 
 function getExpandedHeight(paymentCount: number): number {
   if (paymentCount <= 1) return EXPANDED_BASE_HEIGHT;
@@ -721,6 +721,7 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.body,
     marginBottom: SPACING.lg,
+    fontFamily: FONTS.regular,
   },
   setupButton: {
     backgroundColor: COLORS.accent,
@@ -733,7 +734,7 @@ const styles = StyleSheet.create({
   setupButtonText: {
     color: COLORS.black,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
@@ -742,6 +743,7 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.bodySmall,
     textAlign: 'center',
     marginTop: SPACING.md,
+    fontFamily: FONTS.light,
   },
   header: {
     paddingBottom: SPACING.sm,
@@ -752,6 +754,7 @@ const styles = StyleSheet.create({
   headerDate: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.caption,
+    fontFamily: FONTS.light,
   },
 
   // Hero / Ring
@@ -766,20 +769,22 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 2,
     marginBottom: SPACING.sm,
+    fontFamily: FONTS.bold,
   },
   ringNumber: {
     fontSize: 42,
-    fontWeight: FONT_WEIGHTS.heavy,
+    fontFamily: FONTS.black,
     marginBottom: SPACING.xs,
   },
   ringSub: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     marginBottom: SPACING.sm,
+    fontFamily: FONTS.regular,
   },
   statusBadge: {
     fontSize: FONT_SIZES.caption,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     textTransform: 'uppercase',
     letterSpacing: 3,
   },
@@ -798,16 +803,17 @@ const styles = StyleSheet.create({
     color: COLORS.textTertiary,
     fontSize: FONT_SIZES.caption,
     marginBottom: SPACING.xs,
+    fontFamily: FONTS.light,
   },
   calendarDateNum: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
-    fontWeight: FONT_WEIGHTS.medium,
+    fontFamily: FONTS.medium,
     marginBottom: 4,
   },
   calendarDateNumToday: {
     color: COLORS.text,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
   },
   todayDot: {
     width: 4,
@@ -838,26 +844,28 @@ const styles = StyleSheet.create({
   expandedSummaryText: {
     color: COLORS.accent,
     fontSize: FONT_SIZES.bodySmall,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
   },
   expandedCard: {
-    paddingVertical: SPACING.sm,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
   },
   expandedCardTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: SPACING.xs,
+    marginBottom: 2,
   },
   expandedName: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
   },
   expandedAmount: {
     color: COLORS.accent,
     fontSize: FONT_SIZES.h3,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
   },
   expandedCardBottom: {
     flexDirection: 'row',
@@ -874,14 +882,17 @@ const styles = StyleSheet.create({
     color: COLORS.textTertiary,
     fontSize: 10,
     textTransform: 'uppercase',
+    fontFamily: FONTS.light,
   },
   expandedFrequency: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.caption,
+    fontFamily: FONTS.light,
   },
   expandedDue: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.caption,
+    fontFamily: FONTS.light,
   },
   expandedSeparator: {
     height: 1,
@@ -908,6 +919,7 @@ const styles = StyleSheet.create({
   heatLabel: {
     color: COLORS.textTertiary,
     fontSize: FONT_SIZES.caption,
+    fontFamily: FONTS.light,
   },
 
   // Sections
@@ -920,6 +932,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 2,
     marginBottom: SPACING.md,
+    fontFamily: FONTS.bold,
   },
 
   // Next payment card
@@ -948,17 +961,18 @@ const styles = StyleSheet.create({
   nextPaymentName: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     marginBottom: SPACING.xs,
   },
   nextPaymentDate: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
+    fontFamily: FONTS.regular,
   },
   nextPaymentAmount: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h3,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
   },
 
   // Week snapshot
@@ -975,12 +989,13 @@ const styles = StyleSheet.create({
   weekStatNumber: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h3,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     marginBottom: SPACING.xs,
   },
   weekStatLabel: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.caption,
+    fontFamily: FONTS.light,
   },
 
   // Coming up list
@@ -1002,6 +1017,7 @@ const styles = StyleSheet.create({
   listRowName: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
+    fontFamily: FONTS.regular,
   },
   categoryBadge: {
     backgroundColor: COLORS.surfaceLight,
@@ -1013,10 +1029,12 @@ const styles = StyleSheet.create({
     color: COLORS.textTertiary,
     fontSize: 10,
     textTransform: 'uppercase',
+    fontFamily: FONTS.light,
   },
   listRowDate: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.caption,
+    fontFamily: FONTS.light,
   },
   listRowRight: {
     alignItems: 'flex-end' as const,
@@ -1024,11 +1042,13 @@ const styles = StyleSheet.create({
   listRowAmount: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
+    fontFamily: FONTS.medium,
   },
   splitCaption: {
     color: COLORS.textTertiary,
     fontSize: FONT_SIZES.caption,
     marginTop: 2,
+    fontFamily: FONTS.light,
   },
   separator: {
     height: 1,
@@ -1045,10 +1065,12 @@ const styles = StyleSheet.create({
   summaryLabel: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.body,
+    fontFamily: FONTS.regular,
   },
   summaryValue: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
+    fontFamily: FONTS.regular,
   },
 
   // Tip card
@@ -1059,7 +1081,7 @@ const styles = StyleSheet.create({
   tipLabel: {
     color: COLORS.accent,
     fontSize: FONT_SIZES.caption,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     textTransform: 'uppercase',
     letterSpacing: 2,
     marginBottom: SPACING.sm,
@@ -1068,6 +1090,7 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.bodySmall,
     lineHeight: 20,
+    fontFamily: FONTS.regular,
   },
 
   bottomPad: {

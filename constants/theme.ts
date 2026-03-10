@@ -41,6 +41,26 @@ export const FONT_WEIGHTS = {
   regular: '400' as const,
 };
 
+export const FONTS = {
+  light: 'Montserrat_300Light',
+  regular: 'Montserrat_400Regular',
+  medium: 'Montserrat_500Medium',
+  bold: 'Montserrat_700Bold',
+  black: 'Montserrat_900Black',
+} as const;
+
+// Helper to get font family from weight
+export function getFontFamily(weight: '300' | '400' | '500' | '700' | '900'): string {
+  switch (weight) {
+    case '900': return FONTS.black;
+    case '700': return FONTS.bold;
+    case '500': return FONTS.medium;
+    case '400': return FONTS.regular;
+    case '300': return FONTS.light;
+    default: return FONTS.regular;
+  }
+}
+
 export const BORDER_RADIUS = {
   sharp: 0,
   subtle: 4,

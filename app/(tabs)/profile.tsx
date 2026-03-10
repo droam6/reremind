@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
 import { IncomeFrequency } from '../../types/income';
 import { useIncome } from '../../hooks/useIncome';
 import { useCards } from '../../hooks/useCards';
@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
   header: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h2,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     textTransform: 'uppercase',
     letterSpacing: 2,
     paddingTop: SPACING.xxl + SPACING.md,
@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
   cardRowValueBold: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
   },
   cardSep: {
     height: 1,
@@ -466,7 +466,7 @@ const styles = StyleSheet.create({
   editLinkText: {
     color: COLORS.accent,
     fontSize: FONT_SIZES.bodySmall,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
   },
   cardList: {
     marginBottom: SPACING.xs,
@@ -521,7 +521,7 @@ const styles = StyleSheet.create({
   premiumBadgeText: {
     color: COLORS.accent,
     fontSize: FONT_SIZES.caption,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
   },
   dangerText: {
     color: COLORS.danger,
@@ -588,14 +588,14 @@ const styles = StyleSheet.create({
   dollarSign: {
     color: COLORS.text,
     fontSize: 24,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     marginRight: SPACING.xs,
   },
   amountInput: {
     flex: 1,
     color: COLORS.text,
     fontSize: 24,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     height: 56,
     padding: 0,
     outlineStyle: 'none',
@@ -622,7 +622,7 @@ const styles = StyleSheet.create({
   freqText: {
     color: COLORS.text,
     fontSize: FONT_SIZES.bodySmall,
-    fontWeight: FONT_WEIGHTS.medium,
+    fontFamily: FONTS.medium,
   },
   freqTextSelected: {
     color: COLORS.accent,
@@ -643,7 +643,7 @@ const styles = StyleSheet.create({
   cancelText: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.medium,
+    fontFamily: FONTS.medium,
   },
   saveBtn: {
     backgroundColor: COLORS.accent,
@@ -656,14 +656,14 @@ const styles = StyleSheet.create({
   saveText: {
     color: COLORS.black,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
   resetTitle: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h3,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     marginBottom: SPACING.sm,
   },
   resetDesc: {
@@ -682,7 +682,7 @@ const styles = StyleSheet.create({
   resetBtnText: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Animated, Easing } from 'react-native';
 import { useRouter } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
 
 interface Question {
   text: string;
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   questionText: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h2,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     marginBottom: SPACING.xl,
   },
   optionsContainer: {
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   summaryTitle: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h1,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     marginBottom: SPACING.md,
     textAlign: 'center',
   },
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: COLORS.black,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },

@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { COLORS, FONT_SIZES, FONT_WEIGHTS } from '../../constants/theme';
+import { COLORS, FONT_SIZES, FONTS } from '../../constants/theme';
 
 export default function TabLayout() {
   return (
@@ -18,7 +18,7 @@ export default function TabLayout() {
         },
         tabBarLabelStyle: {
           textTransform: 'uppercase',
-          fontWeight: FONT_WEIGHTS.bold,
+          fontFamily: FONTS.bold,
           fontSize: FONT_SIZES.caption,
           letterSpacing: 1,
         },

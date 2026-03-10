@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Platform } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
 import { Payment, PayFrequency } from '../../types/payment';
 import { usePayments } from '../../hooks/usePayments';
 import { formatCurrency } from '../../utils/formatCurrency';
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
   title: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h2,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     textTransform: 'uppercase',
     letterSpacing: 2,
     marginBottom: SPACING.xs,
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   cardName: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     marginBottom: SPACING.xs,
   },
   cardDetail: {
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   cardAmount: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h3,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
   },
   splitCaption: {
     color: COLORS.textTertiary,
@@ -333,17 +333,17 @@ const styles = StyleSheet.create({
   confirmCancel: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.caption,
-    fontWeight: FONT_WEIGHTS.medium,
+    fontFamily: FONTS.medium,
   },
   confirmYes: {
     color: COLORS.danger,
     fontSize: FONT_SIZES.caption,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
   },
   emptyTitle: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.h3,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     marginBottom: SPACING.sm,
   },
   emptySubtitle: {
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
   emptyButtonText: {
     color: COLORS.black,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
   },
   fab: {
     position: 'absolute',

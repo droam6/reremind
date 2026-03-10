@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Pressable, Modal } from 'react-native';
-import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
 
 interface PremiumGateProps {
   feature: string;
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
   title: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h2,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     textAlign: 'center',
     marginBottom: SPACING.md,
   },
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
   price: {
     color: COLORS.accent,
     fontSize: FONT_SIZES.h3,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     textAlign: 'center',
     marginBottom: SPACING.xl,
   },
@@ -68,6 +68,6 @@ const styles = StyleSheet.create({
   dismissText: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.medium,
+    fontFamily: FONTS.medium,
   },
 });

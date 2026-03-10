@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Pressable, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
 import { useOnboarding } from './OnboardingContext';
 import { useIncome } from '../../hooks/useIncome';
 import { useUser } from '../../hooks/useUser';
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   heading: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h1,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     marginBottom: SPACING.sm,
   },
   subheading: {
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   cardValueBold: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
   },
   cardSeparator: {
     height: 1,
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   heroNumber: {
     color: COLORS.accent,
     fontSize: FONT_SIZES.h1,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     marginBottom: SPACING.xs,
   },
   heroSub: {
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: COLORS.black,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },

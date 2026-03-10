@@ -1,6 +1,14 @@
 import { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Easing, Platform } from 'react-native';
 import { useRouter, Slot } from 'expo-router';
+import { useFonts } from 'expo-font';
+import {
+  Montserrat_300Light,
+  Montserrat_400Regular,
+  Montserrat_500Medium,
+  Montserrat_700Bold,
+  Montserrat_900Black,
+} from '@expo-google-fonts/montserrat';
 import { getUserProfile } from '../utils/storage';
 import { ErrorBoundary } from '../components/ui/ErrorBoundary';
 
@@ -11,6 +19,15 @@ export default function RootLayout() {
   const hasNavigated = useRef(false);
   const router = useRouter();
 
+  // Load Montserrat fonts
+  const [fontsLoaded] = useFonts({
+    Montserrat_300Light,
+    Montserrat_400Regular,
+    Montserrat_500Medium,
+    Montserrat_700Bold,
+    Montserrat_900Black,
+  });
+
   // Splash animations
   const textOpacity = useRef(new Animated.Value(0)).current;
   const splashOpacity = useRef(new Animated.Value(1)).current;
@@ -19,10 +36,13 @@ export default function RootLayout() {
     const loadData = async () => {
       const profile = await getUserProfile();
       setOnboardingComplete(profile?.onboardingComplete ?? false);
-      setReady(true);
+      // Only set ready when both data and fonts are loaded
+      if (fontsLoaded) {
+        setReady(true);
+      }
     };
     loadData();
-  }, []);
+  }, [fontsLoaded]);
 
   // Fix white backgrounds on web
   useEffect(() => {
@@ -107,8 +127,8 @@ const styles = StyleSheet.create({
   },
   splashText: {
     color: '#FFFFFF',
-    fontSize: 36,
-    fontWeight: '900',
-    letterSpacing: 8,
+    fontSize: 32,
+    fontFamily: 'Montserrat_300Light',
+    letterSpacing: 12,
   },
 });

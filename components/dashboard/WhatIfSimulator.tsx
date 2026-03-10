@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Pressable, LayoutAnimation, Platform, UIManager } from 'react-native';
-import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { ProgressRing } from './ProgressRing';
 import { PremiumGate } from '../ui/PremiumGate';
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   collapsedText: {
     color: COLORS.accent,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
   },
   chevron: {
     color: COLORS.textSecondary,
@@ -185,14 +185,14 @@ const styles = StyleSheet.create({
   dollarSign: {
     color: COLORS.text,
     fontSize: 28,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     marginRight: SPACING.xs,
   },
   amountInput: {
     flex: 1,
     color: COLORS.text,
     fontSize: 28,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     height: 56,
     padding: 0,
     outlineStyle: 'none',
@@ -217,10 +217,10 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   impactAmount: {
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
   },
   impactBold: {
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     color: COLORS.text,
   },
   statusMessage: {
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   },
   miniRingAmount: {
     fontSize: 11,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
   },
   closeButton: {
     alignItems: 'center',
@@ -240,6 +240,6 @@ const styles = StyleSheet.create({
   closeText: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.medium,
+    fontFamily: FONTS.medium,
   },
 });

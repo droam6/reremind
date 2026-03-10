@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Pressable, Animated, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
 import { IncomeFrequency } from '../../types/income';
 import { useOnboarding } from './OnboardingContext';
 import { useFadeIn, useProgressWidth } from '../../utils/animations';
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   heading: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h1,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     marginBottom: SPACING.sm,
   },
   subheading: {
@@ -197,14 +197,14 @@ const styles = StyleSheet.create({
   dollarSign: {
     color: COLORS.text,
     fontSize: 36,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     marginRight: SPACING.xs,
   },
   amountInput: {
     flex: 1,
     color: COLORS.text,
     fontSize: 36,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     height: 64,
     padding: 0,
     outlineStyle: 'none',
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   frequencyText: {
     color: COLORS.text,
     fontSize: FONT_SIZES.bodySmall,
-    fontWeight: FONT_WEIGHTS.medium,
+    fontFamily: FONTS.medium,
   },
   frequencyTextSelected: {
     color: COLORS.accent,
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: COLORS.black,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Modal } from 'react-native';
-import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const YEARS = [2025, 2026, 2027, 2028];
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   selectorText: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.medium,
+    fontFamily: FONTS.medium,
   },
   selectorPlaceholder: {
     color: COLORS.textTertiary,
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   },
   modalItemSelected: {
     color: '#C9A84C',
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
   },
   modalItemDisabled: {
     color: COLORS.textTertiary,

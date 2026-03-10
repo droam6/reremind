@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
 import { useLifetimeStats } from '../../hooks/useLifetimeStats';
 import { useCycleHistory } from '../../hooks/useCycleHistory';
 import { usePayments } from '../../hooks/usePayments';
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   pageTitle: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h2,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     textTransform: 'uppercase',
     letterSpacing: 2,
     paddingTop: 48,
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   statNumber: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h3,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     marginBottom: SPACING.xs,
   },
   statLabel: {
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   streakText: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
   },
   streakBest: {
     color: COLORS.textSecondary,
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
   chartOverlayTitle: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     marginBottom: SPACING.sm,
     textAlign: 'center',
   },
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
   premiumButtonText: {
     color: COLORS.black,
     fontSize: FONT_SIZES.bodySmall,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
   bnplAmount: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h3,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
   },
   bnplValue: {
     color: COLORS.text,

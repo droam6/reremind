@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
+import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
 import { Payment } from '../../types/payment';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { generateId } from '../../utils/generateId';
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   heading: {
     color: COLORS.text,
     fontSize: FONT_SIZES.h1,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     marginBottom: SPACING.sm,
   },
   subheading: {
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
   paymentName: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     marginBottom: SPACING.xs,
   },
   paymentAmount: {
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: COLORS.accent,
     fontSize: FONT_SIZES.bodySmall,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
   },
   bottom: {
     paddingHorizontal: SPACING.lg,
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: COLORS.black,
     fontSize: FONT_SIZES.body,
-    fontWeight: FONT_WEIGHTS.bold,
+    fontFamily: FONTS.bold,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
