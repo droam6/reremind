@@ -12,7 +12,8 @@ export default function TabLayout() {
         sceneContainerStyle: { backgroundColor: colors.background },
         tabBarStyle: {
           backgroundColor: colors.tabBar,
-          borderTopWidth: 0,
+          borderTopWidth: 1,
+          borderTopColor: colors.separator,
           elevation: 0,
           shadowOpacity: 0,
           height: 70,

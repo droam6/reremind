@@ -103,7 +103,7 @@ function LineChart({ data, width, height, colors }: LineChartProps) {
           y1={line.y}
           x2={padding.left + chartWidth}
           y2={line.y}
-          stroke={colors.ringTrack}
+          stroke={colors.chartGrid}
           strokeWidth="1"
         />
       ))}

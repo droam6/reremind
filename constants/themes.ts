@@ -15,6 +15,7 @@ export interface ThemeColors {
   separator: string;
   overlay: string;
   ringTrack: string;
+  chartGrid: string;
   black: string;
 }
 
@@ -29,12 +30,13 @@ export const DARK_THEME: ThemeColors = {
   accentDim: '#8A7433',
   danger: '#C44A4A',
   warning: '#D4913A',
-  safe: '#FFFFFF',
+  safe: '#6B9E70',
   tabBar: '#000000',
   cardBorder: '#2A2A2A',
   separator: '#1E1E1E',
   overlay: 'rgba(0,0,0,0.7)',
   ringTrack: '#1A1A1A',
+  chartGrid: '#1E1E1E',
   black: '#000000',
 };
 
@@ -42,18 +44,19 @@ export const LIGHT_THEME: ThemeColors = {
   background: '#F5F0EB',
   surface: '#FFFFFF',
   surfaceLight: '#EDE8E3',
-  text: '#1A1A1A',
-  textSecondary: '#7A7168',
-  textTertiary: '#B5ADA5',
-  accent: '#9B7B3A',
-  accentDim: '#C4A96A',
-  danger: '#B84040',
-  warning: '#C4862E',
-  safe: '#1A1A1A',
-  tabBar: '#FFFFFF',
-  cardBorder: '#E0D9D2',
-  separator: '#E8E2DC',
-  overlay: 'rgba(0,0,0,0.4)',
-  ringTrack: '#E0D9D2',
+  text: '#2C2520',
+  textSecondary: '#8A7E74',
+  textTertiary: '#BDB3A8',
+  accent: '#8B6D2E',
+  accentDim: '#B8993F',
+  danger: '#A33B3B',
+  warning: '#B87A24',
+  safe: '#5B7A5E',
+  tabBar: '#F5F0EB',
+  cardBorder: '#DDD6CE',
+  separator: '#E5DED7',
+  overlay: 'rgba(44, 37, 32, 0.5)',
+  ringTrack: '#DDD6CE',
+  chartGrid: '#E5DED7',
   black: '#000000',
 };

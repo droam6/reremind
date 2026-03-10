@@ -42,9 +42,9 @@ function getHealthColor(remaining: number, income: number, colors: any): string 
 
 function getStatusBadge(remaining: number, income: number, colors: any): { label: string; color: string } {
   if (remaining === 0) return { label: 'EMPTY', color: colors.danger };
-  if (income === 0) return { label: 'COMFORTABLE', color: colors.accent };
+  if (income === 0) return { label: 'COMFORTABLE', color: colors.safe };
   const ratio = remaining / income;
-  if (ratio > 0.3) return { label: 'COMFORTABLE', color: colors.accent };
+  if (ratio > 0.3) return { label: 'COMFORTABLE', color: colors.safe };
   if (ratio > 0.1) return { label: 'CAREFUL', color: colors.warning };
   return { label: 'TIGHT', color: colors.danger };
 }
@@ -56,12 +56,21 @@ function getDotColor(count: number, colors: any): string | null {
   return colors.danger;
 }
 
-function getHeatColor(total: number, colors: any): string {
-  if (total === 0) return colors.surface;
-  if (total <= 50) return '#2A2215';
-  if (total <= 200) return '#3D3018';
-  if (total <= 500) return 'rgba(212, 145, 58, 0.4)';
-  return 'rgba(196, 74, 74, 0.5)';
+function getHeatColor(total: number, colors: any, isDark: boolean): string {
+  if (total === 0) return colors.surfaceLight;
+  if (isDark) {
+    // Dark mode: use dark brown/amber tones
+    if (total <= 50) return '#2A2215';
+    if (total <= 200) return '#3D3018';
+    if (total <= 500) return 'rgba(212, 145, 58, 0.4)';
+    return 'rgba(196, 74, 74, 0.5)';
+  } else {
+    // Light mode: use warm tan/amber tones with good contrast
+    if (total <= 50) return '#D4C9B8';
+    if (total <= 200) return '#C4A876';
+    if (total <= 500) return '#B8862E';
+    return '#A33B3B';
+  }
 }
 
 function plural(count: number, word: string): string {
@@ -104,7 +113,7 @@ export default function HomeScreen() {
   // ALL hooks called unconditionally at the top — no early returns
   const router = useRouter();
   const { user } = useUser();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const styles = createStyles(colors);
   const { income, loading: incomeLoading, reload: reloadIncome } = useIncome();
   const { payments, loading: paymentsLoading, reload: reloadPayments } = usePayments();
@@ -287,7 +296,7 @@ export default function HomeScreen() {
     : colors.accent;
   const statusBadge = hasDashboardData
     ? getStatusBadge(cycleData.remainingAfterBills, income.amount, colors)
-    : { label: 'COMFORTABLE', color: colors.accent };
+    : { label: 'COMFORTABLE', color: colors.safe };
   const ringProgress = hasDashboardData && income.amount > 0
     ? Math.min(1, Math.max(0, cycleData.remainingAfterBills / income.amount))
     : 1;
@@ -627,7 +636,7 @@ export default function HomeScreen() {
               style={[
                 styles.heatCell,
                 {
-                  backgroundColor: getHeatColor(cell.total, colors),
+                  backgroundColor: getHeatColor(cell.total, colors, isDark),
                   flex: 1,
                   marginLeft: i === 0 ? 0 : 1,
                 },
@@ -971,9 +980,9 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginBottom: 2,
   },
   paymentDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
     marginTop: 4,
   },
 
