@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
+import { View, Text, StyleSheet, Animated, Easing, Platform } from 'react-native';
 import { useRouter, Slot } from 'expo-router';
 import { getUserProfile } from '../utils/storage';
 import { ErrorBoundary } from '../components/ui/ErrorBoundary';
@@ -22,6 +22,16 @@ export default function RootLayout() {
       setReady(true);
     };
     loadData();
+  }, []);
+
+  // Fix white backgrounds on web
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      document.documentElement.style.backgroundColor = '#0A0A0A';
+      document.body.style.backgroundColor = '#0A0A0A';
+      document.body.style.margin = '0';
+      document.body.style.overflow = 'hidden';
+    }
   }, []);
 
   useEffect(() => {

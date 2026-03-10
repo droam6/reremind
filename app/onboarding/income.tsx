@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Pressable, Animated } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Pressable, Animated, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
 import { IncomeFrequency } from '../../types/income';
@@ -74,7 +74,7 @@ export default function IncomeScreen() {
           <View style={styles.amountContainer}>
             <Text style={styles.dollarSign}>$</Text>
             <TextInput
-              style={styles.amountInput}
+              style={[styles.amountInput, Platform.OS === 'web' && { outline: 'none' } as any]}
               value={amountText}
               onChangeText={handleAmountChange}
               keyboardType="numeric"
@@ -207,7 +207,10 @@ const styles = StyleSheet.create({
     fontWeight: FONT_WEIGHTS.bold,
     height: 64,
     padding: 0,
-  },
+    outlineStyle: 'none',
+    outlineWidth: 0,
+    outlineColor: 'transparent',
+  } as any,
   frequencyRow: {
     flexDirection: 'row',
     gap: SPACING.sm,

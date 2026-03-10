@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { useState } from 'react';
+import { View, Text, StyleSheet, Pressable, ScrollView, Modal } from 'react-native';
 import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -40,7 +40,7 @@ interface DatePickerProps {
   disablePast?: boolean;
 }
 
-type DropdownType = 'day' | 'month' | 'year' | null;
+type ModalType = 'day' | 'month' | 'year' | null;
 
 export function DatePicker({ value, onChange, label, placeholder, disablePast = false }: DatePickerProps) {
   const now = new Date();
@@ -52,7 +52,7 @@ export function DatePicker({ value, onChange, label, placeholder, disablePast = 
   const [day, setDay] = useState<number | null>(parsed.day);
   const [month, setMonth] = useState<number | null>(parsed.month);
   const [year, setYear] = useState<number | null>(parsed.year);
-  const [openDropdown, setOpenDropdown] = useState<DropdownType>(null);
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
 
   const maxDays = month && year ? daysInMonth(month, year) : 31;
   const days = Array.from({ length: maxDays }, (_, i) => i + 1);
@@ -66,13 +66,13 @@ export function DatePicker({ value, onChange, label, placeholder, disablePast = 
 
   const handleDaySelect = (d: number) => {
     setDay(d);
-    setOpenDropdown(null);
+    setActiveModal(null);
     emitChange(d, month, year);
   };
 
   const handleMonthSelect = (m: number) => {
     setMonth(m);
-    setOpenDropdown(null);
+    setActiveModal(null);
     // Clamp day if needed
     const newMax = year ? daysInMonth(m, year) : 31;
     const newDay = day && day > newMax ? newMax : day;
@@ -82,16 +82,12 @@ export function DatePicker({ value, onChange, label, placeholder, disablePast = 
 
   const handleYearSelect = (y: number) => {
     setYear(y);
-    setOpenDropdown(null);
+    setActiveModal(null);
     // Clamp day if needed
     const newMax = month ? daysInMonth(month, y) : 31;
     const newDay = day && day > newMax ? newMax : day;
     if (newDay !== day) setDay(newDay);
     emitChange(newDay, month, y);
-  };
-
-  const toggleDropdown = (type: DropdownType) => {
-    setOpenDropdown(openDropdown === type ? null : type);
   };
 
   const dayDisplay = day ? String(day) : 'Day';
@@ -100,112 +96,122 @@ export function DatePicker({ value, onChange, label, placeholder, disablePast = 
 
   const isPlaceholder = (val: number | null) => val === null;
 
+  const renderModal = () => {
+    if (!activeModal) return null;
+
+    let title = '';
+    let items: Array<{ value: number | string; label: string; disabled: boolean }> = [];
+
+    if (activeModal === 'day') {
+      title = 'DAY';
+      items = days.map((d) => {
+        const isPast = disablePast && year === todayYear && month === todayMonth && d < todayDay;
+        return { value: d, label: String(d), disabled: isPast };
+      });
+    } else if (activeModal === 'month') {
+      title = 'MONTH';
+      items = MONTHS.map((m, i) => {
+        const monthNum = i + 1;
+        const isPast = disablePast && year === todayYear && monthNum < todayMonth;
+        return { value: monthNum, label: m, disabled: isPast };
+      });
+    } else if (activeModal === 'year') {
+      title = 'YEAR';
+      items = YEARS.map((y) => {
+        const isPast = disablePast && y < todayYear;
+        return { value: y, label: String(y), disabled: isPast };
+      });
+    }
+
+    const handleSelect = (val: number | string) => {
+      if (activeModal === 'day') handleDaySelect(val as number);
+      else if (activeModal === 'month') handleMonthSelect(val as number);
+      else if (activeModal === 'year') handleYearSelect(val as number);
+    };
+
+    const currentValue = activeModal === 'day' ? day : activeModal === 'month' ? month : year;
+
+    return (
+      <Modal
+        visible
+        transparent
+        animationType="fade"
+        onRequestClose={() => setActiveModal(null)}
+      >
+        <Pressable style={styles.overlay} onPress={() => setActiveModal(null)}>
+          <Pressable style={styles.modalCard} onPress={() => {}}>
+            <Text style={styles.modalTitle}>{title}</Text>
+            <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
+              {items.map((item) => {
+                const isSelected = item.value === currentValue;
+                return (
+                  <Pressable
+                    key={item.value}
+                    style={styles.modalItem}
+                    onPress={() => !item.disabled && handleSelect(item.value)}
+                    disabled={item.disabled}
+                  >
+                    <Text
+                      style={[
+                        styles.modalItemText,
+                        isSelected && styles.modalItemSelected,
+                        item.disabled && styles.modalItemDisabled,
+                      ]}
+                    >
+                      {item.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
+    );
+  };
+
   return (
     <View style={styles.wrapper}>
       {label && <Text style={styles.label}>{label}</Text>}
       <View style={styles.row}>
         {/* Day */}
-        <View style={styles.dropdownWrapper}>
-          <Pressable
-            style={[styles.selector, openDropdown === 'day' && styles.selectorActive]}
-            onPress={() => toggleDropdown('day')}
-          >
-            <Text style={[styles.selectorText, isPlaceholder(day) && styles.selectorPlaceholder]}>
-              {dayDisplay}
-            </Text>
-          </Pressable>
-          {openDropdown === 'day' && (
-            <View style={styles.dropdown}>
-              <ScrollView style={styles.dropdownScroll} nestedScrollEnabled>
-                {days.map((d) => {
-                  const isPast = disablePast && year === todayYear && month === todayMonth && d < todayDay;
-                  return (
-                  <Pressable key={d} style={styles.dropdownItem} onPress={() => !isPast && handleDaySelect(d)} disabled={isPast}>
-                    <Text style={[styles.dropdownItemText, d === day && styles.dropdownItemSelected, isPast && styles.dropdownItemDisabled]}>
-                      {d}
-                    </Text>
-                  </Pressable>
-                  );
-                })}
-              </ScrollView>
-            </View>
-          )}
-        </View>
+        <Pressable
+          style={[styles.selector, activeModal === 'day' && styles.selectorActive]}
+          onPress={() => setActiveModal('day')}
+        >
+          <Text style={[styles.selectorText, isPlaceholder(day) && styles.selectorPlaceholder]}>
+            {dayDisplay}
+          </Text>
+        </Pressable>
 
         {/* Month */}
-        <View style={styles.dropdownWrapper}>
-          <Pressable
-            style={[styles.selector, openDropdown === 'month' && styles.selectorActive]}
-            onPress={() => toggleDropdown('month')}
-          >
-            <Text style={[styles.selectorText, isPlaceholder(month) && styles.selectorPlaceholder]}>
-              {monthDisplay}
-            </Text>
-          </Pressable>
-          {openDropdown === 'month' && (
-            <View style={styles.dropdown}>
-              <ScrollView style={styles.dropdownScroll} nestedScrollEnabled>
-                {MONTHS.map((m, i) => {
-                  const monthNum = i + 1;
-                  const isPast = disablePast && year === todayYear && monthNum < todayMonth;
-                  return (
-                  <Pressable key={m} style={styles.dropdownItem} onPress={() => !isPast && handleMonthSelect(monthNum)} disabled={isPast}>
-                    <Text style={[styles.dropdownItemText, monthNum === month && styles.dropdownItemSelected, isPast && styles.dropdownItemDisabled]}>
-                      {m}
-                    </Text>
-                  </Pressable>
-                  );
-                })}
-              </ScrollView>
-            </View>
-          )}
-        </View>
+        <Pressable
+          style={[styles.selector, activeModal === 'month' && styles.selectorActive]}
+          onPress={() => setActiveModal('month')}
+        >
+          <Text style={[styles.selectorText, isPlaceholder(month) && styles.selectorPlaceholder]}>
+            {monthDisplay}
+          </Text>
+        </Pressable>
 
         {/* Year */}
-        <View style={styles.dropdownWrapper}>
-          <Pressable
-            style={[styles.selector, openDropdown === 'year' && styles.selectorActive]}
-            onPress={() => toggleDropdown('year')}
-          >
-            <Text style={[styles.selectorText, isPlaceholder(year) && styles.selectorPlaceholder]}>
-              {yearDisplay}
-            </Text>
-          </Pressable>
-          {openDropdown === 'year' && (
-            <View style={styles.dropdown}>
-              <ScrollView style={styles.dropdownScroll} nestedScrollEnabled>
-                {YEARS.map((y) => {
-                  const isPast = disablePast && y < todayYear;
-                  return (
-                  <Pressable key={y} style={styles.dropdownItem} onPress={() => !isPast && handleYearSelect(y)} disabled={isPast}>
-                    <Text style={[styles.dropdownItemText, y === year && styles.dropdownItemSelected, isPast && styles.dropdownItemDisabled]}>
-                      {y}
-                    </Text>
-                  </Pressable>
-                  );
-                })}
-              </ScrollView>
-            </View>
-          )}
-        </View>
+        <Pressable
+          style={[styles.selector, activeModal === 'year' && styles.selectorActive]}
+          onPress={() => setActiveModal('year')}
+        >
+          <Text style={[styles.selectorText, isPlaceholder(year) && styles.selectorPlaceholder]}>
+            {yearDisplay}
+          </Text>
+        </Pressable>
       </View>
 
-      {/* Tap-outside overlay when dropdown open */}
-      {openDropdown && (
-        <Pressable
-          style={StyleSheet.absoluteFill}
-          onPress={() => setOpenDropdown(null)}
-        />
-      )}
+      {renderModal()}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    zIndex: 100,
-    overflow: 'visible',
-  },
+  wrapper: {},
   label: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.caption,
@@ -216,15 +222,9 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     gap: SPACING.sm,
-    overflow: 'visible',
-  },
-  dropdownWrapper: {
-    flex: 1,
-    position: 'relative',
-    zIndex: 100,
-    overflow: 'visible',
   },
   selector: {
+    flex: 1,
     backgroundColor: COLORS.surface,
     height: 48,
     borderRadius: BORDER_RADIUS.sharp,
@@ -244,40 +244,47 @@ const styles = StyleSheet.create({
   selectorPlaceholder: {
     color: COLORS.textTertiary,
   },
-  dropdown: {
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    right: 0,
-    backgroundColor: '#1E1E1E',
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+  },
+  modalCard: {
+    backgroundColor: COLORS.surfaceLight,
     borderRadius: BORDER_RADIUS.sharp,
-    maxHeight: 200,
-    zIndex: 9999,
-    elevation: 999,
-    marginTop: 4,
-    borderWidth: 1,
-    borderColor: '#2A2A2A',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    padding: 24,
+    width: '100%',
+    maxWidth: 300,
+    maxHeight: '60%',
   },
-  dropdownScroll: {
-    maxHeight: 200,
+  modalTitle: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZES.caption,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: SPACING.md,
+    textAlign: 'center',
   },
-  dropdownItem: {
-    paddingVertical: 12,
-    paddingHorizontal: SPACING.md,
+  modalScroll: {
+    maxHeight: 300,
   },
-  dropdownItemText: {
+  modalItem: {
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2A2A2A',
+  },
+  modalItemText: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
+    textAlign: 'center',
   },
-  dropdownItemSelected: {
+  modalItemSelected: {
     color: COLORS.accent,
     fontWeight: FONT_WEIGHTS.bold,
   },
-  dropdownItemDisabled: {
+  modalItemDisabled: {
     color: COLORS.textTertiary,
     opacity: 0.4,
   },

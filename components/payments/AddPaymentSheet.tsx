@@ -10,6 +10,7 @@ import {
   Animated,
   Easing,
   Dimensions,
+  Platform,
 } from 'react-native';
 import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, BORDER_RADIUS } from '../../constants/theme';
 import { Payment, PayFrequency, PaymentCategory } from '../../types/payment';
@@ -261,7 +262,7 @@ export function AddPaymentSheet({
               {/* Name */}
               <Text style={styles.label}>NAME</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, Platform.OS === 'web' && { outline: 'none' } as any]}
                 value={name}
                 onChangeText={(t) => setName(t.slice(0, 50))}
                 placeholder="e.g. Rent, Netflix, Afterpay"
@@ -276,7 +277,7 @@ export function AddPaymentSheet({
               <View style={styles.amountContainer}>
                 <Text style={styles.dollarSign}>$</Text>
                 <TextInput
-                  style={styles.amountInput}
+                  style={[styles.amountInput, Platform.OS === 'web' && { outline: 'none' } as any]}
                   value={amount}
                   onChangeText={(t) => {
                     const cleaned = t.replace(/[^0-9.]/g, '');
@@ -347,7 +348,7 @@ export function AddPaymentSheet({
                 <View style={styles.splitCountRow}>
                   <Text style={styles.splitCountLabel}>How many people?</Text>
                   <TextInput
-                    style={styles.splitCountInput}
+                    style={[styles.splitCountInput, Platform.OS === 'web' && { outline: 'none' } as any]}
                     value={splitCount}
                     onChangeText={(t) => setSplitCount(t.replace(/[^0-9]/g, ''))}
                     keyboardType="numeric"
@@ -453,7 +454,10 @@ const styles = StyleSheet.create({
     height: 48,
     paddingHorizontal: SPACING.md,
     borderRadius: BORDER_RADIUS.sharp,
-  },
+    outlineStyle: 'none',
+    outlineWidth: 0,
+    outlineColor: 'transparent',
+  } as any,
   amountContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -475,7 +479,10 @@ const styles = StyleSheet.create({
     fontWeight: FONT_WEIGHTS.bold,
     height: 56,
     padding: 0,
-  },
+    outlineStyle: 'none',
+    outlineWidth: 0,
+    outlineColor: 'transparent',
+  } as any,
   shareText: {
     color: COLORS.accent,
     fontSize: FONT_SIZES.bodySmall,
@@ -586,7 +593,10 @@ const styles = StyleSheet.create({
     height: 40,
     textAlign: 'center',
     borderRadius: BORDER_RADIUS.sharp,
-  },
+    outlineStyle: 'none',
+    outlineWidth: 0,
+    outlineColor: 'transparent',
+  } as any,
 
   fieldGapView: {
     marginTop: 20,

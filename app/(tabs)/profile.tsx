@@ -261,7 +261,7 @@ export default function ProfileScreen() {
             <View style={styles.amountContainer}>
               <Text style={styles.dollarSign}>$</Text>
               <TextInput
-                style={styles.amountInput}
+                style={[styles.amountInput, Platform.OS === 'web' && { outline: 'none' } as any]}
                 value={editAmount}
                 onChangeText={(t) => {
                   const cleaned = t.replace(/[^0-9.]/g, '');
@@ -329,7 +329,7 @@ export default function ProfileScreen() {
           <Pressable style={styles.modal} onPress={() => {}}>
             <Text style={styles.modalLabel}>CARD LABEL</Text>
             <TextInput
-              style={styles.modalInput}
+              style={[styles.modalInput, Platform.OS === 'web' && { outline: 'none' } as any]}
               value={cardLabel}
               onChangeText={setCardLabel}
               placeholder="e.g. Commonwealth Debit"
@@ -338,7 +338,7 @@ export default function ProfileScreen() {
 
             <Text style={[styles.modalLabel, { marginTop: 20 }]}>LAST 4 DIGITS (OPTIONAL)</Text>
             <TextInput
-              style={styles.modalInput}
+              style={[styles.modalInput, Platform.OS === 'web' && { outline: 'none' } as any]}
               value={cardLastFour}
               onChangeText={(t) => setCardLastFour(t.replace(/[^0-9]/g, '').slice(0, 4))}
               keyboardType="numeric"
@@ -573,7 +573,10 @@ const styles = StyleSheet.create({
     height: 48,
     paddingHorizontal: SPACING.md,
     borderRadius: BORDER_RADIUS.sharp,
-  },
+    outlineStyle: 'none',
+    outlineWidth: 0,
+    outlineColor: 'transparent',
+  } as any,
   amountContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -595,7 +598,10 @@ const styles = StyleSheet.create({
     fontWeight: FONT_WEIGHTS.bold,
     height: 56,
     padding: 0,
-  },
+    outlineStyle: 'none',
+    outlineWidth: 0,
+    outlineColor: 'transparent',
+  } as any,
   freqRow: {
     flexDirection: 'row',
     gap: SPACING.sm,

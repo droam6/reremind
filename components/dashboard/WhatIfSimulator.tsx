@@ -84,7 +84,7 @@ export function WhatIfSimulator({
           <View style={styles.inputRow}>
             <Text style={styles.dollarSign}>$</Text>
             <TextInput
-              style={styles.amountInput}
+              style={[styles.amountInput, Platform.OS === 'web' && { outline: 'none' } as any]}
               value={spendAmount}
               onChangeText={(t) => setSpendAmount(t.replace(/[^0-9.]/g, ''))}
               keyboardType="numeric"
@@ -195,7 +195,10 @@ const styles = StyleSheet.create({
     fontWeight: FONT_WEIGHTS.bold,
     height: 56,
     padding: 0,
-  },
+    outlineStyle: 'none',
+    outlineWidth: 0,
+    outlineColor: 'transparent',
+  } as any,
   impactArea: {
     marginBottom: SPACING.lg,
   },
