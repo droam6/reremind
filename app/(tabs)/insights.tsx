@@ -8,6 +8,7 @@ import { useLifetimeStats } from '../../hooks/useLifetimeStats';
 import { useCycleHistory } from '../../hooks/useCycleHistory';
 import { usePayments } from '../../hooks/usePayments';
 import { useUser } from '../../hooks/useUser';
+import { useIncome } from '../../hooks/useIncome';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatRelativeDate, parseDate } from '../../utils/formatDate';
 import { capitalizeName } from '../../utils/capitalize';
@@ -309,6 +310,7 @@ export default function InsightsScreen() {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { user } = useUser();
+  const { income } = useIncome();
   const { stats, loading: statsLoading, reload: reloadStats } = useLifetimeStats();
   const { history, loading: historyLoading, reload: reloadHistory } = useCycleHistory();
   const { payments, loading: paymentsLoading, reload: reloadPayments } = usePayments();
@@ -391,7 +393,7 @@ export default function InsightsScreen() {
 
     monthlyData.push({
       label: monthLabel,
-      income: 2100,
+      income: income.amount || 2100,
       committed: avgCommitted,
     });
   }

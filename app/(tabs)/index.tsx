@@ -461,7 +461,7 @@ export default function HomeScreen() {
             <Text style={styles.ringSub}>
               {cycleData ? formatCountdown(cycleData.daysUntilPayday) : ''}
             </Text>
-            <Text style={[styles.statusBadge, { color: colors.accent }]}>
+            <Text style={[styles.statusBadge, { color: colors.safe }]}>
               COMFORTABLE
             </Text>
           </ProgressRing>
