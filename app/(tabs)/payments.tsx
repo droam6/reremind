@@ -4,6 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
 import { Payment, PayFrequency } from '../../types/payment';
 import { usePayments } from '../../hooks/usePayments';
+import { useUser } from '../../hooks/useUser';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatRelativeDate, parseDate } from '../../utils/formatDate';
 import { capitalizeName } from '../../utils/capitalize';
@@ -33,11 +34,13 @@ function toMonthlyAmount(amount: number, freq: PayFrequency): number {
 }
 
 export default function PaymentsScreen() {
+  const { user } = useUser();
   const { payments, loading, addPayment, removePayment, updatePayment, reload } = usePayments();
   const [showSheet, setShowSheet] = useState(false);
   const [showPremiumGate, setShowPremiumGate] = useState(false);
   const [editingPayment, setEditingPayment] = useState<Payment | undefined>(undefined);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const isPremium = user?.isPremium ?? false;
 
   useFocusEffect(
     useCallback(() => {
@@ -51,7 +54,7 @@ export default function PaymentsScreen() {
   );
 
   const handleAddPayment = () => {
-    if (payments.length >= FREE_LIMITS.MAX_PAYMENTS) {
+    if (!isPremium && payments.length >= FREE_LIMITS.MAX_PAYMENTS) {
       setShowPremiumGate(true);
       return;
     }
@@ -218,6 +221,7 @@ export default function PaymentsScreen() {
         }}
         onSave={handleSave}
         initialPayment={editingPayment}
+        isPremium={isPremium}
       />
 
       {showPremiumGate && (

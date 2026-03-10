@@ -5,6 +5,7 @@ import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from 
 import { useLifetimeStats } from '../../hooks/useLifetimeStats';
 import { useCycleHistory } from '../../hooks/useCycleHistory';
 import { usePayments } from '../../hooks/usePayments';
+import { useUser } from '../../hooks/useUser';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatRelativeDate, parseDate } from '../../utils/formatDate';
 import { capitalizeName } from '../../utils/capitalize';
@@ -31,10 +32,12 @@ function plural(count: number, word: string): string {
 }
 
 export default function InsightsScreen() {
+  const { user } = useUser();
   const { stats, loading: statsLoading, reload: reloadStats } = useLifetimeStats();
   const { history, loading: historyLoading, reload: reloadHistory } = useCycleHistory();
   const { payments, loading: paymentsLoading, reload: reloadPayments } = usePayments();
   const [showPremiumGate, setShowPremiumGate] = useState(false);
+  const isPremium = user?.isPremium ?? false;
 
   useFocusEffect(
     useCallback(() => {
@@ -113,31 +116,49 @@ export default function InsightsScreen() {
       {/* Section 3: Cycle History Graph (premium-gated) */}
       <View style={styles.section}>
         <Text style={styles.sectionHeader}>YOUR PROGRESS</Text>
-        <View style={styles.chartPlaceholder}>
-          <View style={styles.chartBlur}>
-            {/* Fake chart bars for visual effect */}
-            <View style={styles.fakeChartRow}>
-              {[40, 65, 50, 80, 55, 70, 90].map((h, i) => (
-                <View
-                  key={i}
-                  style={[styles.fakeBar, { height: h, opacity: 0.15 }]}
-                />
-              ))}
+        {isPremium ? (
+          <View style={styles.chartContainer}>
+            {history.length === 0 ? (
+              <View style={styles.chartEmpty}>
+                <Text style={styles.chartEmptyText}>
+                  Complete a pay cycle to see your progress here
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.chartEmpty}>
+                <Text style={styles.chartEmptyText}>
+                  Chart view coming soon - {history.length} {plural(history.length, 'cycle')} recorded
+                </Text>
+              </View>
+            )}
+          </View>
+        ) : (
+          <View style={styles.chartPlaceholder}>
+            <View style={styles.chartBlur}>
+              {/* Fake chart bars for visual effect */}
+              <View style={styles.fakeChartRow}>
+                {[40, 65, 50, 80, 55, 70, 90].map((h, i) => (
+                  <View
+                    key={i}
+                    style={[styles.fakeBar, { height: h, opacity: 0.15 }]}
+                  />
+                ))}
+              </View>
+            </View>
+            <View style={styles.chartOverlay}>
+              <Text style={styles.chartOverlayTitle}>See how you're improving</Text>
+              <Text style={styles.chartOverlayDesc}>
+                Track your money left on payday over time
+              </Text>
+              <Pressable
+                style={styles.premiumButton}
+                onPress={() => setShowPremiumGate(true)}
+              >
+                <Text style={styles.premiumButtonText}>Upgrade to Premium</Text>
+              </Pressable>
             </View>
           </View>
-          <View style={styles.chartOverlay}>
-            <Text style={styles.chartOverlayTitle}>See how you're improving</Text>
-            <Text style={styles.chartOverlayDesc}>
-              Track your money left on payday over time
-            </Text>
-            <Pressable
-              style={styles.premiumButton}
-              onPress={() => setShowPremiumGate(true)}
-            >
-              <Text style={styles.premiumButtonText}>Upgrade to Premium</Text>
-            </Pressable>
-          </View>
-        </View>
+        )}
       </View>
 
       {/* Section 4: BNPL Summary */}
@@ -296,6 +317,23 @@ const styles = StyleSheet.create({
   },
 
   // Chart placeholder
+  chartContainer: {
+    backgroundColor: COLORS.surface,
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+  },
+  chartEmpty: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  chartEmptyText: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZES.body,
+    textAlign: 'center',
+    fontFamily: FONTS.light,
+  },
   chartPlaceholder: {
     backgroundColor: COLORS.surface,
     height: 200,

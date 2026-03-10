@@ -16,6 +16,7 @@ import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from 
 import { IncomeFrequency } from '../../types/income';
 import { useIncome } from '../../hooks/useIncome';
 import { useCards } from '../../hooks/useCards';
+import { useUser } from '../../hooks/useUser';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatRelativeDate } from '../../utils/formatDate';
 import { generateId } from '../../utils/generateId';
@@ -59,7 +60,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { income, reload: reloadIncome, saveIncome } = useIncome();
   const { cards, addCard, removeCard } = useCards();
-  // useUser no longer needed for reset — clearAll() handles everything
+  const { user, setIsPremium } = useUser();
 
   // Modals
   const [showEditIncome, setShowEditIncome] = useState(false);
@@ -107,7 +108,7 @@ export default function ProfileScreen() {
   };
 
   const openAddCard = () => {
-    if (cards.length >= FREE_LIMITS.MAX_CARDS) {
+    if (!user?.isPremium && cards.length >= FREE_LIMITS.MAX_CARDS) {
       setPremiumFeature('unlimited cards');
       setShowPremiumGate(true);
       return;
@@ -246,6 +247,15 @@ export default function ProfileScreen() {
       <View style={styles.footer}>
         <Text style={styles.footerBrand}>RE-REMIND</Text>
         <Text style={styles.footerVersion}>Version 1.0.0</Text>
+        <Pressable
+          style={styles.devModeToggle}
+          onPress={() => setIsPremium(!user?.isPremium)}
+        >
+          <Text style={styles.devModeText}>
+            Dev Mode{user?.isPremium && ' · Premium'}
+          </Text>
+          {user?.isPremium && <View style={styles.premiumDot} />}
+        </Pressable>
       </View>
 
       {/* Edit Income Modal */}
@@ -545,6 +555,25 @@ const styles = StyleSheet.create({
   footerVersion: {
     color: COLORS.textTertiary,
     fontSize: FONT_SIZES.caption,
+  },
+  devModeToggle: {
+    marginTop: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACING.xs,
+  },
+  devModeText: {
+    color: COLORS.textTertiary,
+    fontSize: FONT_SIZES.caption,
+    fontFamily: FONTS.light,
+  },
+  premiumDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.accent,
   },
 
   // Modal shared styles

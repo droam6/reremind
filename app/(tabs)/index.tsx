@@ -8,6 +8,7 @@ import { usePayments } from '../../hooks/usePayments';
 import { useCycleData } from '../../hooks/useCycleData';
 import { useCycleHistory } from '../../hooks/useCycleHistory';
 import { useLifetimeStats } from '../../hooks/useLifetimeStats';
+import { useUser } from '../../hooks/useUser';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatRelativeDate, formatCountdown, parseDate } from '../../utils/formatDate';
 import { capitalizeName } from '../../utils/capitalize';
@@ -102,6 +103,7 @@ function getExpandedHeight(paymentCount: number): number {
 export default function HomeScreen() {
   // ALL hooks called unconditionally at the top — no early returns
   const router = useRouter();
+  const { user } = useUser();
   const { income, loading: incomeLoading, reload: reloadIncome } = useIncome();
   const { payments, loading: paymentsLoading, reload: reloadPayments } = usePayments();
   const cycleData = useCycleData(income, payments);
@@ -665,6 +667,7 @@ export default function HomeScreen() {
         remainingAfterBills={cycleData.remainingAfterBills}
         incomeAmount={income.amount}
         daysUntilPayday={cycleData.daysUntilPayday}
+        isPremium={user?.isPremium}
       />
 
       {/* 9. This Cycle Summary */}
