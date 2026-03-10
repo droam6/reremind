@@ -15,6 +15,7 @@ import { capitalizeName } from '../../utils/capitalize';
 import { getDayPayments, getWeekPayments, getWeekTotal, getBusiestDay, DayPaymentInfo } from '../../utils/calculations';
 import { generateId } from '../../utils/generateId';
 import { saveIncome } from '../../utils/storage';
+import { getPulseMessage } from '../../utils/pulseMessage';
 import { ProgressRing } from '../../components/dashboard/ProgressRing';
 import { WhatIfSimulator } from '../../components/dashboard/WhatIfSimulator';
 import { SavingsNudge } from '../../components/dashboard/SavingsNudge';
@@ -108,8 +109,10 @@ export default function HomeScreen() {
   const { payments, loading: paymentsLoading, reload: reloadPayments } = usePayments();
   const cycleData = useCycleData(income, payments);
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
+  const [showRingBreakdown, setShowRingBreakdown] = useState(false);
   const { history, addRecord, reload: reloadHistory } = useCycleHistory();
   const { incrementCyclesCompleted, updateStreak, reload: reloadStats } = useLifetimeStats();
+  const { stats } = useLifetimeStats();
   const cycleRecordedRef = useRef(false);
   const [showSavingsNudge, setShowSavingsNudge] = useState(true);
 
@@ -186,6 +189,10 @@ export default function HomeScreen() {
   const prevExpandedDay = useRef<string | null>(null);
   const [expandVisible, setExpandVisible] = useState(false);
 
+  // Ring breakdown animation refs
+  const breakdownHeight = useRef(new Animated.Value(0)).current;
+  const breakdownOpacity = useRef(new Animated.Value(0)).current;
+
   // First-mount staggered animations (only on initial mount, not tab switches)
   const isFirstMount = useRef(true);
   const heroOpacity = useRef(new Animated.Value(0)).current;
@@ -213,6 +220,42 @@ export default function HomeScreen() {
       }),
     ]).start();
   }, [heroOpacity, badgeOpacity, calendarOpacity, contentOpacity]);
+
+  // Ring breakdown animation effect
+  useEffect(() => {
+    const easeOut = Easing.out(Easing.cubic);
+    if (showRingBreakdown) {
+      Animated.parallel([
+        Animated.timing(breakdownHeight, {
+          toValue: 1,
+          duration: 400,
+          easing: easeOut,
+          useNativeDriver: false,
+        }),
+        Animated.timing(breakdownOpacity, {
+          toValue: 1,
+          duration: 400,
+          easing: easeOut,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(breakdownHeight, {
+          toValue: 0,
+          duration: 400,
+          easing: easeOut,
+          useNativeDriver: false,
+        }),
+        Animated.timing(breakdownOpacity, {
+          toValue: 0,
+          duration: 400,
+          easing: easeOut,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [showRingBreakdown, breakdownHeight, breakdownOpacity]);
 
   const todayStr = new Date().toISOString().split('T')[0];
 
@@ -430,29 +473,74 @@ export default function HomeScreen() {
 
       {/* 2. Progress Ring with safe badge */}
       <Animated.View style={[styles.heroZone, { opacity: heroOpacity }]}>
-        <ProgressRing
-          progress={ringProgress}
-          size={240}
-          strokeWidth={10}
-          trackStrokeWidth={8}
-          color={healthColor}
-          trackColor={RING_TRACK_COLOR}
-        >
-          <Text style={styles.ringLabel}>LEFT AFTER BILLS</Text>
-          <Text
-            style={[styles.ringNumber, { color: healthColor }]}
-            accessibilityLabel={`${formatCurrency(cycleData.remainingAfterBills)} left after bills`}
-            accessibilityRole="text"
+        <Pressable onPress={() => setShowRingBreakdown(!showRingBreakdown)}>
+          <ProgressRing
+            progress={ringProgress}
+            size={240}
+            strokeWidth={10}
+            trackStrokeWidth={8}
+            color={healthColor}
+            trackColor={RING_TRACK_COLOR}
           >
-            {formatCurrency(cycleData.remainingAfterBills)}
-          </Text>
-          <Text style={styles.ringSub}>
-            {formatCountdown(cycleData.daysUntilPayday)}
-          </Text>
-          <Animated.Text style={[styles.statusBadge, { color: statusBadge.color, opacity: badgeOpacity }]}>
-            {statusBadge.label}
-          </Animated.Text>
-        </ProgressRing>
+            <Text style={styles.ringLabel}>LEFT AFTER BILLS</Text>
+            <Text
+              style={[styles.ringNumber, { color: healthColor }]}
+              accessibilityLabel={`${formatCurrency(cycleData.remainingAfterBills)} left after bills`}
+              accessibilityRole="text"
+            >
+              {formatCurrency(cycleData.remainingAfterBills)}
+            </Text>
+            <Text style={styles.ringSub}>
+              {formatCountdown(cycleData.daysUntilPayday)}
+            </Text>
+            <Animated.Text style={[styles.statusBadge, { color: statusBadge.color, opacity: badgeOpacity }]}>
+              {statusBadge.label}
+            </Animated.Text>
+          </ProgressRing>
+        </Pressable>
+      </Animated.View>
+
+      {/* Ring Breakdown Card */}
+      <Animated.View
+        style={[
+          styles.breakdownCard,
+          {
+            height: breakdownHeight.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, 160],
+            }),
+            opacity: breakdownOpacity,
+            marginTop: showRingBreakdown ? SPACING.md : 0,
+          },
+        ]}
+        pointerEvents={showRingBreakdown ? 'auto' : 'none'}
+      >
+        <View style={styles.breakdownRow}>
+          <Text style={styles.breakdownLabel}>Income</Text>
+          <Text style={styles.breakdownAmountGold}>{formatCurrency(income.amount)}</Text>
+        </View>
+        <View style={[styles.breakdownBar, { width: '100%', backgroundColor: COLORS.accent }]} />
+
+        <View style={styles.breakdownRow}>
+          <Text style={styles.breakdownLabel}>Bills this cycle</Text>
+          <Text style={styles.breakdownAmount}>{formatCurrency(cycleData.totalCommitted)}</Text>
+        </View>
+        <View
+          style={[
+            styles.breakdownBar,
+            {
+              width: `${Math.round((cycleData.totalCommitted / income.amount) * 100)}%`,
+              backgroundColor: COLORS.text,
+            },
+          ]}
+        />
+
+        <View style={styles.breakdownSeparator} />
+
+        <View style={styles.breakdownRow}>
+          <Text style={[styles.breakdownLabel, { color: COLORS.accent }]}>Left after bills</Text>
+          <Text style={styles.breakdownAmountGold}>{formatCurrency(cycleData.remainingAfterBills)}</Text>
+        </View>
       </Animated.View>
 
       {/* 3. 7-Day Calendar Strip */}
@@ -484,6 +572,11 @@ export default function HomeScreen() {
           );
         })}
       </Animated.View>
+
+      {/* Pulse Message */}
+      <Text style={styles.pulseMessage}>
+        {getPulseMessage(cycleData, history, stats)}
+      </Text>
 
       {/* Expanded day detail */}
       {expandVisible && (
@@ -789,6 +882,58 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.regular,
     textTransform: 'uppercase',
     letterSpacing: 3,
+  },
+
+  // Ring breakdown
+  breakdownCard: {
+    backgroundColor: COLORS.surface,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    marginHorizontal: SPACING.lg,
+    overflow: 'hidden',
+  },
+  breakdownRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  breakdownLabel: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZES.body,
+    fontFamily: FONTS.light,
+  },
+  breakdownAmount: {
+    color: COLORS.text,
+    fontSize: FONT_SIZES.body,
+    fontFamily: FONTS.regular,
+  },
+  breakdownAmountGold: {
+    color: COLORS.accent,
+    fontSize: FONT_SIZES.body,
+    fontFamily: FONTS.bold,
+  },
+  breakdownBar: {
+    height: 4,
+    marginBottom: 16,
+    borderRadius: 2,
+  },
+  breakdownSeparator: {
+    height: 1,
+    backgroundColor: COLORS.accent,
+    marginVertical: 12,
+  },
+
+  // Pulse message
+  pulseMessage: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZES.bodySmall,
+    fontFamily: FONTS.light,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginBottom: SPACING.lg,
+    marginHorizontal: SPACING.lg,
+    lineHeight: 20,
   },
 
   // Calendar strip

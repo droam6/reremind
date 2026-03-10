@@ -10,6 +10,7 @@ import { useUser } from '../../hooks/useUser';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatRelativeDate, parseDate } from '../../utils/formatDate';
 import { capitalizeName } from '../../utils/capitalize';
+import { formatCategoryName } from '../../utils/categoryDisplay';
 import { PremiumGate } from '../../components/ui/PremiumGate';
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -515,6 +516,16 @@ export default function InsightsScreen() {
             </View>
           </View>
         )}
+        {/* Conversational insight for line chart */}
+        {isPremium && history.length > 0 && (
+          <Text style={styles.conversationalInsight}>
+            {isImproving
+              ? "You've been keeping more money each cycle. That's not luck — that's awareness."
+              : lastCycle && secondLastCycle && lastCycle.remainingOnPayday < secondLastCycle.remainingOnPayday
+              ? "Things have been tighter lately. That's okay — knowing is the first step."
+              : "You've been consistent. Steady is good."}
+          </Text>
+        )}
       </View>
 
       {/* Section 4: Spending Breakdown Donut Chart (premium) */}
@@ -537,7 +548,7 @@ export default function InsightsScreen() {
                 return (
                   <View key={i} style={styles.legendItem}>
                     <View style={[styles.legendDot, { backgroundColor: item.color }]} />
-                    <Text style={styles.legendLabel}>{item.category}</Text>
+                    <Text style={styles.legendLabel}>{formatCategoryName(item.category)}</Text>
                     <View style={styles.legendSpacer} />
                     <Text style={styles.legendAmount}>{formatCurrency(item.amount)}</Text>
                     <Text style={styles.legendPercent}>{percentage}%</Text>
@@ -545,6 +556,16 @@ export default function InsightsScreen() {
                 );
               })}
             </View>
+            {/* Conversational insight for donut chart */}
+            {spendingByCategory.length > 0 && (() => {
+              const largest = spendingByCategory[0];
+              const largestPercentage = Math.round((largest.amount / totalMonthlyCommitted) * 100);
+              return (
+                <Text style={styles.conversationalInsight}>
+                  {formatCategoryName(largest.category)} takes up {largestPercentage}% of your bills. {largestPercentage > 50 ? "That's normal" : "That's the biggest one"} — but everything else is where you have control.
+                </Text>
+              );
+            })()}
           </View>
         </View>
       )}
@@ -565,6 +586,30 @@ export default function InsightsScreen() {
                 <Text style={styles.barLegendText}>Committed</Text>
               </View>
             </View>
+            {/* Conversational insight for bar chart */}
+            {monthlyData.length >= 2 && (() => {
+              const firstMonth = monthlyData[0];
+              const lastMonth = monthlyData[monthlyData.length - 1];
+              if (lastMonth.committed < firstMonth.committed) {
+                return (
+                  <Text style={styles.conversationalInsight}>
+                    Your bills are getting lighter. Keep it going.
+                  </Text>
+                );
+              } else if (lastMonth.committed > firstMonth.committed) {
+                return (
+                  <Text style={styles.conversationalInsight}>
+                    Your commitments are growing. Worth reviewing what's new.
+                  </Text>
+                );
+              } else {
+                return (
+                  <Text style={styles.conversationalInsight}>
+                    Your monthly pattern is steady. No surprises.
+                  </Text>
+                );
+              }
+            })()}
           </View>
         </View>
       )}
@@ -637,6 +682,14 @@ export default function InsightsScreen() {
                   {isImproving ? '↑ ' : '↓ '}
                 </Text>
                 That's {formatCurrency(Math.abs(cycleDiff))} {isImproving ? 'more' : 'less'} than the cycle before
+              </Text>
+            )}
+            {/* Conversational insight for cycle report card */}
+            {secondLastCycle && cycleDiff !== 0 && (
+              <Text style={[styles.conversationalInsight, { marginTop: SPACING.md }]}>
+                {isImproving
+                  ? `That extra ${formatCurrency(Math.abs(cycleDiff))} might not feel like much, but over a year that's ${formatCurrency(Math.abs(cycleDiff) * 26)}. Small wins compound.`
+                  : `You had less this time. It happens. The fact that you're tracking it puts you ahead of most people.`}
               </Text>
             )}
           </View>
@@ -767,6 +820,17 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.light,
     textAlign: 'center',
     marginTop: SPACING.xs,
+  },
+  conversationalInsight: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZES.bodySmall,
+    fontFamily: FONTS.light,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginTop: SPACING.md,
+    maxWidth: 300,
+    alignSelf: 'center',
+    lineHeight: 20,
   },
   chartEmpty: {
     justifyContent: 'center',
