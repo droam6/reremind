@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { COLORS, SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
+import Svg, { Line, Circle, Path, Text as SvgText } from 'react-native-svg';
+import { COLORS, SPACING, FONT_SIZES, FONTS, BORDER_RADIUS } from '../../constants/theme';
 import { useLifetimeStats } from '../../hooks/useLifetimeStats';
 import { useCycleHistory } from '../../hooks/useCycleHistory';
 import { usePayments } from '../../hooks/usePayments';
@@ -31,6 +32,273 @@ function plural(count: number, word: string): string {
   return count === 1 ? word : `${word}s`;
 }
 
+function formatShortDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  return `${date.getDate()} ${MONTH_NAMES[date.getMonth()].substring(0, 3)}`;
+}
+
+interface LineChartProps {
+  data: Array<{ date: string; value: number }>;
+  width: number;
+  height: number;
+}
+
+function LineChart({ data, width, height }: LineChartProps) {
+  if (data.length === 0) return null;
+
+  const padding = { top: 20, right: 20, bottom: 30, left: 40 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+
+  const maxValue = Math.max(...data.map((d) => d.value), 100);
+  const minValue = Math.min(...data.map((d) => d.value), 0);
+  const valueRange = maxValue - minValue || 100;
+
+  const xStep = chartWidth / (data.length - 1 || 1);
+
+  const getX = (index: number) => padding.left + index * xStep;
+  const getY = (value: number) => padding.top + chartHeight - ((value - minValue) / valueRange) * chartHeight;
+
+  // Build line path
+  let pathD = '';
+  data.forEach((point, i) => {
+    const x = getX(i);
+    const y = getY(point.value);
+    if (i === 0) {
+      pathD += `M ${x} ${y}`;
+    } else {
+      pathD += ` L ${x} ${y}`;
+    }
+  });
+
+  // Build area path (fill below line)
+  let areaD = pathD;
+  if (data.length > 0) {
+    areaD += ` L ${getX(data.length - 1)} ${padding.top + chartHeight}`;
+    areaD += ` L ${getX(0)} ${padding.top + chartHeight}`;
+    areaD += ' Z';
+  }
+
+  // Grid lines (4 horizontal lines)
+  const gridLines = [0, 0.33, 0.66, 1].map((ratio) => ({
+    y: padding.top + chartHeight * (1 - ratio),
+    value: Math.round(minValue + valueRange * ratio),
+  }));
+
+  // Determine trend: gold if improving, amber if declining
+  const firstValue = data[0]?.value || 0;
+  const lastValue = data[data.length - 1]?.value || 0;
+  const lineColor = lastValue >= firstValue ? COLORS.accent : '#D4913A';
+
+  return (
+    <Svg width={width} height={height}>
+      {/* Grid lines */}
+      {gridLines.map((line, i) => (
+        <Line
+          key={i}
+          x1={padding.left}
+          y1={line.y}
+          x2={padding.left + chartWidth}
+          y2={line.y}
+          stroke="#1A1A1A"
+          strokeWidth="1"
+        />
+      ))}
+
+      {/* Area fill */}
+      <Path d={areaD} fill={lineColor} fillOpacity="0.1" />
+
+      {/* Line */}
+      <Path d={pathD} stroke={lineColor} strokeWidth="2" fill="none" />
+
+      {/* Data points */}
+      {data.map((point, i) => (
+        <Circle
+          key={i}
+          cx={getX(i)}
+          cy={getY(point.value)}
+          r="5"
+          fill={lineColor}
+        />
+      ))}
+
+      {/* X-axis labels */}
+      {data.map((point, i) => {
+        // Only show labels for first, middle, and last points
+        if (i === 0 || i === Math.floor(data.length / 2) || i === data.length - 1) {
+          return (
+            <SvgText
+              key={`label-${i}`}
+              x={getX(i)}
+              y={padding.top + chartHeight + 20}
+              fill={COLORS.textTertiary}
+              fontSize="10"
+              fontFamily={FONTS.light}
+              textAnchor="middle"
+            >
+              {formatShortDate(point.date)}
+            </SvgText>
+          );
+        }
+        return null;
+      })}
+
+      {/* Y-axis labels */}
+      {gridLines.filter((_, i) => i === 0 || i === gridLines.length - 1).map((line, i) => (
+        <SvgText
+          key={`y-${i}`}
+          x={padding.left - 10}
+          y={line.y + 4}
+          fill={COLORS.textTertiary}
+          fontSize="10"
+          fontFamily={FONTS.light}
+          textAnchor="end"
+        >
+          ${line.value}
+        </SvgText>
+      ))}
+    </Svg>
+  );
+}
+
+interface DonutChartProps {
+  data: Array<{ category: string; amount: number; color: string }>;
+  size: number;
+  strokeWidth: number;
+}
+
+function DonutChart({ data, size, strokeWidth }: DonutChartProps) {
+  if (data.length === 0) return null;
+
+  const total = data.reduce((sum, d) => sum + d.amount, 0);
+  const center = size / 2;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+
+  let currentAngle = -90; // Start at top
+
+  return (
+    <Svg width={size} height={size}>
+      {data.map((segment, i) => {
+        const percentage = segment.amount / total;
+        const angleSize = percentage * 360;
+        const endAngle = currentAngle + angleSize;
+
+        // Convert angles to radians
+        const startRad = (currentAngle * Math.PI) / 180;
+        const endRad = (endAngle * Math.PI) / 180;
+
+        // Calculate path
+        const startX = center + radius * Math.cos(startRad);
+        const startY = center + radius * Math.sin(startRad);
+        const endX = center + radius * Math.cos(endRad);
+        const endY = center + radius * Math.sin(endRad);
+
+        const largeArc = angleSize > 180 ? 1 : 0;
+
+        const pathD = [
+          `M ${center} ${center}`,
+          `L ${startX} ${startY}`,
+          `A ${radius} ${radius} 0 ${largeArc} 1 ${endX} ${endY}`,
+          'Z',
+        ].join(' ');
+
+        currentAngle = endAngle;
+
+        return (
+          <Path
+            key={i}
+            d={pathD}
+            fill="none"
+            stroke={segment.color}
+            strokeWidth={strokeWidth}
+          />
+        );
+      })}
+    </Svg>
+  );
+}
+
+interface BarChartProps {
+  data: Array<{ label: string; income: number; committed: number }>;
+  width: number;
+  height: number;
+}
+
+function BarChart({ data, width, height }: BarChartProps) {
+  if (data.length === 0) return null;
+
+  const padding = { top: 20, right: 20, bottom: 30, left: 40 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+
+  const maxValue = Math.max(...data.flatMap((d) => [d.income, d.committed]), 1000);
+  const barWidth = 20;
+  const barGap = 4;
+  const groupGap = 32;
+  const groupWidth = barWidth * 2 + barGap;
+  const totalGroupsWidth = groupWidth * data.length + groupGap * (data.length - 1);
+  const startX = padding.left + (chartWidth - totalGroupsWidth) / 2;
+
+  return (
+    <Svg width={width} height={height}>
+      {/* Grid lines */}
+      {[0, 0.5, 1].map((ratio, i) => {
+        const y = padding.top + chartHeight * (1 - ratio);
+        return (
+          <Line
+            key={i}
+            x1={padding.left}
+            y1={y}
+            x2={padding.left + chartWidth}
+            y2={y}
+            stroke="#1A1A1A"
+            strokeWidth="1"
+          />
+        );
+      })}
+
+      {/* Bars */}
+      {data.map((group, i) => {
+        const groupX = startX + i * (groupWidth + groupGap);
+
+        const incomeHeight = (group.income / maxValue) * chartHeight;
+        const committedHeight = (group.committed / maxValue) * chartHeight;
+
+        const incomeY = padding.top + chartHeight - incomeHeight;
+        const committedY = padding.top + chartHeight - committedHeight;
+
+        return (
+          <View key={i}>
+            {/* Income bar (opacity) */}
+            <Path
+              d={`M ${groupX} ${incomeY} L ${groupX + barWidth} ${incomeY} L ${groupX + barWidth} ${padding.top + chartHeight} L ${groupX} ${padding.top + chartHeight} Z`}
+              fill={COLORS.accent}
+              fillOpacity="0.3"
+            />
+            {/* Committed bar (solid) */}
+            <Path
+              d={`M ${groupX + barWidth + barGap} ${committedY} L ${groupX + barWidth + barGap + barWidth} ${committedY} L ${groupX + barWidth + barGap + barWidth} ${padding.top + chartHeight} L ${groupX + barWidth + barGap} ${padding.top + chartHeight} Z`}
+              fill={COLORS.accent}
+            />
+            {/* X-axis label */}
+            <SvgText
+              x={groupX + groupWidth / 2}
+              y={padding.top + chartHeight + 20}
+              fill={COLORS.textTertiary}
+              fontSize="10"
+              fontFamily={FONTS.light}
+              textAnchor="middle"
+            >
+              {group.label}
+            </SvgText>
+          </View>
+        );
+      })}
+    </Svg>
+  );
+}
+
 export default function InsightsScreen() {
   const { user } = useUser();
   const { stats, loading: statsLoading, reload: reloadStats } = useLifetimeStats();
@@ -55,6 +323,65 @@ export default function InsightsScreen() {
   const nextBnpl = bnplPayments.length > 0
     ? [...bnplPayments].sort((a, b) => a.nextDueDate.localeCompare(b.nextDueDate))[0]
     : null;
+
+  // Spending breakdown by category
+  const categoryColors: Record<string, string> = {
+    rent: '#C9A84C',
+    utilities: '#8A7433',
+    subscriptions: '#6B6B6B',
+    bnpl: '#D4913A',
+    insurance: '#4A7C59',
+    transport: '#7C4A4A',
+    groceries: '#4A5A7C',
+    other: '#3A3A3A',
+  };
+
+  const spendingByCategory = payments.reduce((acc, p) => {
+    const existing = acc.find((item) => item.category === p.category);
+    if (existing) {
+      existing.amount += p.amount;
+    } else {
+      acc.push({
+        category: p.category,
+        amount: p.amount,
+        color: categoryColors[p.category] || categoryColors.other,
+      });
+    }
+    return acc;
+  }, [] as Array<{ category: string; amount: number; color: string }>);
+
+  spendingByCategory.sort((a, b) => b.amount - a.amount);
+  const totalMonthlyCommitted = spendingByCategory.reduce((sum, c) => sum + c.amount, 0);
+
+  // Monthly comparison (last 3 months)
+  const monthlyData: Array<{ label: string; income: number; committed: number }> = [];
+  const now = new Date();
+  for (let i = 2; i >= 0; i--) {
+    const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthLabel = MONTH_NAMES[monthDate.getMonth()];
+    monthlyData.push({
+      label: monthLabel,
+      income: 2100, // Simplified for demo
+      committed: totalMonthlyCommitted,
+    });
+  }
+
+  // Cycle history chart data
+  const cycleChartData = history.map((record) => ({
+    date: record.cycleEndDate,
+    value: record.remainingOnPayday,
+  }));
+
+  const averageRemaining = history.length > 0
+    ? Math.round(history.reduce((sum, r) => sum + r.remainingOnPayday, 0) / history.length)
+    : 0;
+
+  const lastCycle = history.length > 0 ? history[history.length - 1] : null;
+  const secondLastCycle = history.length > 1 ? history[history.length - 2] : null;
+  const cycleDiff = lastCycle && secondLastCycle
+    ? lastCycle.remainingOnPayday - secondLastCycle.remainingOnPayday
+    : 0;
+  const isImproving = cycleDiff > 0;
 
   if (loading) {
     return <View style={styles.container} />;
@@ -113,7 +440,7 @@ export default function InsightsScreen() {
         </View>
       </View>
 
-      {/* Section 3: Cycle History Graph (premium-gated) */}
+      {/* Section 3: Cycle History Line Chart (premium) */}
       <View style={styles.section}>
         <Text style={styles.sectionHeader}>YOUR PROGRESS</Text>
         {isPremium ? (
@@ -125,11 +452,16 @@ export default function InsightsScreen() {
                 </Text>
               </View>
             ) : (
-              <View style={styles.chartEmpty}>
-                <Text style={styles.chartEmptyText}>
-                  Chart view coming soon - {history.length} {plural(history.length, 'cycle')} recorded
+              <>
+                <Text style={styles.chartTitle}>Money left on payday</Text>
+                <LineChart data={cycleChartData} width={340} height={200} />
+                <Text style={styles.chartCaption}>
+                  Your average: {formatCurrency(averageRemaining)}/cycle
                 </Text>
-              </View>
+                <Text style={[styles.trendIndicator, { color: isImproving ? COLORS.accent : '#D4913A' }]}>
+                  {isImproving ? '↑' : '↓'} {isImproving ? 'Improving' : 'Declining'}
+                </Text>
+              </>
             )}
           </View>
         ) : (
@@ -161,7 +493,59 @@ export default function InsightsScreen() {
         )}
       </View>
 
-      {/* Section 4: BNPL Summary */}
+      {/* Section 4: Spending Breakdown Donut Chart (premium) */}
+      {isPremium && spendingByCategory.length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionHeader}>WHERE IT GOES</Text>
+          <View style={styles.chartContainer}>
+            <View style={styles.donutContainer}>
+              <DonutChart data={spendingByCategory} size={180} strokeWidth={24} />
+              <View style={styles.donutCenter}>
+                <Text style={styles.donutCenterAmount}>
+                  {formatCurrency(Math.round(totalMonthlyCommitted))}
+                </Text>
+                <Text style={styles.donutCenterLabel}>per month</Text>
+              </View>
+            </View>
+            <View style={styles.legend}>
+              {spendingByCategory.map((item, i) => {
+                const percentage = Math.round((item.amount / totalMonthlyCommitted) * 100);
+                return (
+                  <View key={i} style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: item.color }]} />
+                    <Text style={styles.legendLabel}>{item.category}</Text>
+                    <View style={styles.legendSpacer} />
+                    <Text style={styles.legendAmount}>{formatCurrency(item.amount)}</Text>
+                    <Text style={styles.legendPercent}>{percentage}%</Text>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* Section 5: Monthly Comparison Bar Chart (premium) */}
+      {isPremium && monthlyData.length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionHeader}>MONTH BY MONTH</Text>
+          <View style={styles.chartContainer}>
+            <BarChart data={monthlyData} width={340} height={160} />
+            <View style={styles.barLegend}>
+              <View style={styles.barLegendItem}>
+                <View style={[styles.barLegendDot, { backgroundColor: COLORS.accent, opacity: 0.3 }]} />
+                <Text style={styles.barLegendText}>Income</Text>
+              </View>
+              <View style={styles.barLegendItem}>
+                <View style={[styles.barLegendDot, { backgroundColor: COLORS.accent }]} />
+                <Text style={styles.barLegendText}>Committed</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* Section 6: BNPL Exposure */}
       {bnplPayments.length > 0 && (
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>BNPL EXPOSURE</Text>
@@ -190,7 +574,7 @@ export default function InsightsScreen() {
         </View>
       )}
 
-      {/* Section 5: Total Debt Estimate */}
+      {/* Section 7: Total Debt Estimate */}
       {bnplPayments.length > 0 && (
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>TOTAL DEBT</Text>
@@ -208,6 +592,29 @@ export default function InsightsScreen() {
             <Text style={styles.debtCaption}>
               This is a rough estimate based on your tracked payments.
             </Text>
+          </View>
+        </View>
+      )}
+
+      {/* Section 8: Cycle Report Card (premium) */}
+      {isPremium && lastCycle && (
+        <View style={styles.section}>
+          <Text style={styles.sectionHeader}>LAST CYCLE</Text>
+          <View style={styles.reportCard}>
+            <Text style={styles.reportAmount}>
+              You had {formatCurrency(lastCycle.remainingOnPayday)} left on payday
+            </Text>
+            <Text style={styles.reportCoverage}>
+              You covered all {lastCycle.paymentsCovered} payments
+            </Text>
+            {secondLastCycle && cycleDiff !== 0 && (
+              <Text style={styles.reportComparison}>
+                <Text style={{ color: isImproving ? COLORS.accent : '#D4913A' }}>
+                  {isImproving ? '↑ ' : '↓ '}
+                </Text>
+                That's {formatCurrency(Math.abs(cycleDiff))} {isImproving ? 'more' : 'less'} than the cycle before
+              </Text>
+            )}
           </View>
         </View>
       )}
@@ -231,12 +638,6 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: SPACING.lg,
-  },
-  loadingText: {
-    color: COLORS.textSecondary,
-    fontSize: FONT_SIZES.body,
-    textAlign: 'center',
-    marginTop: SPACING.xxxl,
   },
 
   // Header
@@ -282,6 +683,7 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.caption,
     textAlign: 'center',
+    fontFamily: FONTS.light,
   },
 
   // Streak
@@ -303,11 +705,12 @@ const styles = StyleSheet.create({
   streakText: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.light,
   },
   streakBest: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.caption,
+    fontFamily: FONTS.light,
   },
   streakEmpty: {
     color: COLORS.textSecondary,
@@ -316,17 +719,35 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.light,
   },
 
-  // Chart placeholder
+  // Chart container
   chartContainer: {
     backgroundColor: COLORS.surface,
-    height: 200,
-    justifyContent: 'center',
+    padding: 20,
     alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
+  },
+  chartTitle: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZES.bodySmall,
+    fontFamily: FONTS.light,
+    marginBottom: SPACING.md,
+  },
+  chartCaption: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZES.bodySmall,
+    fontFamily: FONTS.light,
+    textAlign: 'center',
+    marginTop: SPACING.md,
+  },
+  trendIndicator: {
+    fontSize: FONT_SIZES.bodySmall,
+    fontFamily: FONTS.light,
+    textAlign: 'center',
+    marginTop: SPACING.xs,
   },
   chartEmpty: {
     justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: SPACING.xl,
   },
   chartEmptyText: {
     color: COLORS.textSecondary,
@@ -334,6 +755,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: FONTS.light,
   },
+
+  // Chart placeholder for free users
   chartPlaceholder: {
     backgroundColor: COLORS.surface,
     height: 200,
@@ -375,6 +798,7 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.bodySmall,
     marginBottom: SPACING.lg,
     textAlign: 'center',
+    fontFamily: FONTS.light,
   },
   premiumButton: {
     backgroundColor: COLORS.accent,
@@ -392,6 +816,88 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
 
+  // Donut chart
+  donutContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.lg,
+  },
+  donutCenter: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  donutCenterAmount: {
+    color: COLORS.text,
+    fontSize: FONT_SIZES.h3,
+    fontFamily: FONTS.bold,
+  },
+  donutCenterLabel: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZES.caption,
+    fontFamily: FONTS.light,
+    marginTop: 2,
+  },
+  legend: {
+    width: '100%',
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: SPACING.xs,
+  },
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: SPACING.sm,
+  },
+  legendLabel: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZES.caption,
+    fontFamily: FONTS.light,
+    textTransform: 'capitalize',
+  },
+  legendSpacer: {
+    flex: 1,
+  },
+  legendAmount: {
+    color: COLORS.text,
+    fontSize: FONT_SIZES.caption,
+    fontFamily: FONTS.light,
+    marginRight: SPACING.sm,
+  },
+  legendPercent: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZES.caption,
+    fontFamily: FONTS.light,
+    minWidth: 32,
+    textAlign: 'right',
+  },
+
+  // Bar chart
+  barLegend: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: SPACING.lg,
+    marginTop: SPACING.md,
+  },
+  barLegendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  barLegendDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 2,
+    marginRight: SPACING.xs,
+  },
+  barLegendText: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZES.caption,
+    fontFamily: FONTS.light,
+  },
+
   // BNPL
   bnplCard: {
     backgroundColor: COLORS.surface,
@@ -406,6 +912,7 @@ const styles = StyleSheet.create({
   bnplLabel: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZES.body,
+    fontFamily: FONTS.light,
   },
   bnplAmount: {
     color: COLORS.text,
@@ -415,6 +922,7 @@ const styles = StyleSheet.create({
   bnplValue: {
     color: COLORS.text,
     fontSize: FONT_SIZES.body,
+    fontFamily: FONTS.light,
   },
   bnplDetail: {
     color: COLORS.text,
@@ -422,6 +930,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     flex: 1,
     marginLeft: SPACING.md,
+    fontFamily: FONTS.light,
   },
   bnplSeparator: {
     height: 1,
@@ -432,6 +941,34 @@ const styles = StyleSheet.create({
     color: COLORS.textTertiary,
     fontSize: FONT_SIZES.caption,
     marginTop: SPACING.sm,
+    fontFamily: FONTS.light,
+  },
+
+  // Report card
+  reportCard: {
+    backgroundColor: COLORS.surface,
+    padding: 24,
+    alignItems: 'center',
+  },
+  reportAmount: {
+    color: COLORS.accent,
+    fontSize: FONT_SIZES.h3,
+    fontFamily: FONTS.bold,
+    textAlign: 'center',
+    marginBottom: SPACING.sm,
+  },
+  reportCoverage: {
+    color: COLORS.text,
+    fontSize: FONT_SIZES.body,
+    fontFamily: FONTS.light,
+    textAlign: 'center',
+    marginBottom: SPACING.sm,
+  },
+  reportComparison: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZES.bodySmall,
+    fontFamily: FONTS.light,
+    textAlign: 'center',
   },
 
   bottomPad: {

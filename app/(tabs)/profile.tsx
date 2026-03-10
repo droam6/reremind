@@ -21,6 +21,7 @@ import { formatCurrency } from '../../utils/formatCurrency';
 import { formatRelativeDate } from '../../utils/formatDate';
 import { generateId } from '../../utils/generateId';
 import { clearAll } from '../../utils/storage';
+import { loadMockData } from '../../utils/mockData';
 import { FREE_LIMITS } from '../../constants/limits';
 import { PremiumGate } from '../../components/ui/PremiumGate';
 import { DatePicker } from '../../components/ui/DatePicker';
@@ -135,6 +136,16 @@ export default function ProfileScreen() {
       window.location.href = '/onboarding/welcome';
     } else {
       router.replace('/onboarding/welcome');
+    }
+  };
+
+  const handleLoadMockData = async () => {
+    await loadMockData();
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.location.reload();
+    } else {
+      // On native, navigate to home to trigger data reload
+      router.replace('/(tabs)');
     }
   };
 
@@ -255,6 +266,12 @@ export default function ProfileScreen() {
             Dev Mode{user?.isPremium && ' · Premium'}
           </Text>
           {user?.isPremium && <View style={styles.premiumDot} />}
+        </Pressable>
+        <Pressable
+          style={styles.loadDemoButton}
+          onPress={handleLoadMockData}
+        >
+          <Text style={styles.loadDemoText}>Load demo data</Text>
         </Pressable>
       </View>
 
@@ -574,6 +591,16 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
     backgroundColor: COLORS.accent,
+  },
+  loadDemoButton: {
+    marginTop: SPACING.sm,
+    paddingVertical: SPACING.sm,
+  },
+  loadDemoText: {
+    color: COLORS.accent,
+    fontSize: FONT_SIZES.caption,
+    fontFamily: FONTS.light,
+    textAlign: 'center',
   },
 
   // Modal shared styles
