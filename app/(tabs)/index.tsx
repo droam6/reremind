@@ -10,6 +10,7 @@ import { useCycleHistory } from '../../hooks/useCycleHistory';
 import { useLifetimeStats } from '../../hooks/useLifetimeStats';
 import { useUser } from '../../hooks/useUser';
 import { useTheme } from '../../hooks/useTheme';
+import { useNotifications } from '../../hooks/useNotifications';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatRelativeDate, formatCountdown, parseDate } from '../../utils/formatDate';
 import { capitalizeName } from '../../utils/capitalize';
@@ -118,6 +119,7 @@ export default function HomeScreen() {
   const { income, loading: incomeLoading, reload: reloadIncome } = useIncome();
   const { payments, loading: paymentsLoading, reload: reloadPayments } = usePayments();
   const cycleData = useCycleData(income, payments);
+  const { scheduleAll, preferences } = useNotifications();
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
   const [showRingBreakdown, setShowRingBreakdown] = useState(false);
   const { history, addRecord, reload: reloadHistory } = useCycleHistory();
@@ -135,6 +137,13 @@ export default function HomeScreen() {
       setExpandedDay(null);
     }, [reloadIncome, reloadPayments, reloadHistory, reloadStats])
   );
+
+  // Schedule notifications when payments change
+  useEffect(() => {
+    if (preferences.enabled && payments.length > 0) {
+      scheduleAll(payments, user?.isPremium ?? false);
+    }
+  }, [payments, preferences.enabled, scheduleAll, user?.isPremium]);
 
   // Cycle end detection — record completed cycles automatically
   useEffect(() => {

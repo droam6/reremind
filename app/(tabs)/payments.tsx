@@ -11,6 +11,7 @@ import { formatRelativeDate, parseDate } from '../../utils/formatDate';
 import { capitalizeName } from '../../utils/capitalize';
 import { generateId } from '../../utils/generateId';
 import { AddPaymentSheet } from '../../components/payments/AddPaymentSheet';
+import { PaymentCalendar } from '../../components/payments/PaymentCalendar';
 import { PremiumGate } from '../../components/ui/PremiumGate';
 import { FREE_LIMITS } from '../../constants/limits';
 
@@ -40,9 +41,10 @@ export default function PaymentsScreen() {
   const { user } = useUser();
   const { payments, loading, addPayment, removePayment, updatePayment, reload } = usePayments();
   const [showSheet, setShowSheet] = useState(false);
-  const [showPremiumGate, setShowPremiumGate] = useState(false);
+  const [premiumFeature, setPremiumFeature] = useState<string>('');
   const [editingPayment, setEditingPayment] = useState<Payment | undefined>(undefined);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [view, setView] = useState<'list' | 'calendar'>('list');
   const isPremium = user?.isPremium ?? false;
 
   useFocusEffect(
@@ -58,7 +60,7 @@ export default function PaymentsScreen() {
 
   const handleAddPayment = () => {
     if (!isPremium && payments.length >= FREE_LIMITS.MAX_PAYMENTS) {
-      setShowPremiumGate(true);
+      setPremiumFeature('unlimited payments');
       return;
     }
     setEditingPayment(undefined);
@@ -121,7 +123,53 @@ export default function PaymentsScreen() {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>PAYMENTS</Text>
+        <View style={styles.headerTop}>
+          <Text style={styles.title}>PAYMENTS</Text>
+          {hasPayments && (
+            <View style={styles.viewToggle}>
+              <Pressable
+                style={[
+                  styles.viewPill,
+                  view === 'list' && styles.viewPillActive,
+                  { backgroundColor: view === 'list' ? 'transparent' : colors.surface },
+                ]}
+                onPress={() => setView('list')}
+              >
+                <Text
+                  style={[
+                    styles.viewPillText,
+                    { color: view === 'list' ? colors.accent : colors.textSecondary },
+                  ]}
+                >
+                  List
+                </Text>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.viewPill,
+                  view === 'calendar' && styles.viewPillActive,
+                  { backgroundColor: view === 'calendar' ? 'transparent' : colors.surface },
+                ]}
+                onPress={() => {
+                  if (!isPremium) {
+                    setPremiumFeature('payment calendar view');
+                  } else {
+                    setView('calendar');
+                  }
+                }}
+              >
+                <Text
+                  style={[
+                    styles.viewPillText,
+                    { color: view === 'calendar' ? colors.accent : colors.textSecondary },
+                  ]}
+                >
+                  Calendar
+                </Text>
+              </Pressable>
+            </View>
+          )}
+        </View>
         {hasPayments && (
           <Text style={styles.summary}>
             {payments.length} payment{payments.length !== 1 ? 's' : ''} · {formatCurrency(Math.round(monthlyTotal))}/month
@@ -129,7 +177,9 @@ export default function PaymentsScreen() {
         )}
       </View>
 
-      {hasPayments ? (
+      {view === 'calendar' && hasPayments ? (
+        <PaymentCalendar payments={payments} />
+      ) : hasPayments ? (
         <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
           {sortedPayments.map((p) => {
             const isOverdue = p.nextDueDate < todayStr;
@@ -227,10 +277,10 @@ export default function PaymentsScreen() {
         isPremium={isPremium}
       />
 
-      {showPremiumGate && (
+      {premiumFeature && (
         <PremiumGate
-          feature="unlimited payments"
-          onDismiss={() => setShowPremiumGate(false)}
+          feature={premiumFeature}
+          onDismiss={() => setPremiumFeature('')}
         />
       )}
     </View>
@@ -251,13 +301,37 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingBottom: SPACING.md,
     paddingHorizontal: SPACING.lg,
   },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: SPACING.xs,
+  },
   title: {
     color: colors.text,
     fontSize: FONT_SIZES.h2,
     fontFamily: FONTS.medium,
     textTransform: 'uppercase',
     letterSpacing: 2,
-    marginBottom: SPACING.xs,
+  },
+  viewToggle: {
+    flexDirection: 'row',
+    gap: SPACING.xs,
+  },
+  viewPill: {
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+    borderRadius: BORDER_RADIUS.button,
+  },
+  viewPillActive: {
+    borderWidth: 1,
+    borderColor: colors.accent,
+  },
+  viewPillText: {
+    fontSize: FONT_SIZES.caption,
+    fontFamily: FONTS.regular,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   summary: {
     color: colors.textSecondary,

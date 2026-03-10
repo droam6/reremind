@@ -15,9 +15,11 @@ import { useFocusEffect } from '@react-navigation/native';
 import { SPACING, FONT_SIZES, FONT_WEIGHTS, FONTS, BORDER_RADIUS } from '../../constants/theme';
 import { IncomeFrequency } from '../../types/income';
 import { useIncome } from '../../hooks/useIncome';
+import { usePayments } from '../../hooks/usePayments';
 import { useCards } from '../../hooks/useCards';
 import { useUser } from '../../hooks/useUser';
 import { useTheme } from '../../hooks/useTheme';
+import { useNotifications } from '../../hooks/useNotifications';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatRelativeDate } from '../../utils/formatDate';
 import { generateId } from '../../utils/generateId';
@@ -61,10 +63,12 @@ function formatToDisplay(isoDate: string): string {
 export default function ProfileScreen() {
   const router = useRouter();
   const { income, reload: reloadIncome, saveIncome } = useIncome();
+  const { payments } = usePayments();
   const { cards, addCard, removeCard } = useCards();
   const { user, setIsPremium } = useUser();
   const { colors, isDark, setTheme } = useTheme();
   const styles = createStyles(colors);
+  const { preferences, updatePreferences, scheduleAll } = useNotifications();
 
   // Modals
   const [showEditIncome, setShowEditIncome] = useState(false);
@@ -280,10 +284,108 @@ export default function ProfileScreen() {
           </View>
         </View>
         <View style={[styles.cardSep, { backgroundColor: colors.separator }]} />
-        <Pressable style={styles.cardRow}>
+        <Pressable
+          style={styles.cardRow}
+          onPress={async () => {
+            const newEnabled = !preferences.enabled;
+            await updatePreferences({ enabled: newEnabled });
+            if (newEnabled) {
+              await scheduleAll(payments, user?.isPremium ?? false);
+            }
+          }}
+        >
           <Text style={[styles.cardRowValue, { color: colors.text }]}>Notifications</Text>
-          <Text style={[styles.comingSoon, { color: colors.textTertiary }]}>Coming soon</Text>
+          <Text style={[styles.cardRowSecondary, { color: colors.textSecondary }]}>
+            {preferences.enabled ? 'On' : 'Off'}
+          </Text>
         </Pressable>
+
+        {/* Premium notification timing settings */}
+        {preferences.enabled && user?.isPremium && (
+          <View style={[styles.notificationSettings, { backgroundColor: colors.surfaceLight }]}>
+            <Text style={[styles.notificationLabel, { color: colors.textSecondary }]}>
+              REMINDER TIMING
+            </Text>
+            <Pressable
+              style={styles.timingRow}
+              onPress={async () => {
+                await updatePreferences({ threeDays: !preferences.threeDays });
+                await scheduleAll(payments, true);
+              }}
+            >
+              <Text style={[styles.timingText, { color: colors.text }]}>3 days before</Text>
+              <View
+                style={[
+                  styles.timingToggle,
+                  preferences.threeDays && styles.timingToggleActive,
+                  { backgroundColor: preferences.threeDays ? colors.accent : colors.surface },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.timingToggleKnob,
+                    preferences.threeDays && styles.timingToggleKnobActive,
+                    { backgroundColor: preferences.threeDays ? colors.black : colors.textTertiary },
+                  ]}
+                />
+              </View>
+            </Pressable>
+            <Pressable
+              style={styles.timingRow}
+              onPress={async () => {
+                await updatePreferences({ oneDay: !preferences.oneDay });
+                await scheduleAll(payments, true);
+              }}
+            >
+              <Text style={[styles.timingText, { color: colors.text }]}>1 day before</Text>
+              <View
+                style={[
+                  styles.timingToggle,
+                  preferences.oneDay && styles.timingToggleActive,
+                  { backgroundColor: preferences.oneDay ? colors.accent : colors.surface },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.timingToggleKnob,
+                    preferences.oneDay && styles.timingToggleKnobActive,
+                    { backgroundColor: preferences.oneDay ? colors.black : colors.textTertiary },
+                  ]}
+                />
+              </View>
+            </Pressable>
+            <View style={styles.timingRow}>
+              <Text style={[styles.timingText, { color: colors.text }]}>Day of payment</Text>
+              <View
+                style={[
+                  styles.timingToggle,
+                  styles.timingToggleActive,
+                  { backgroundColor: colors.accent },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.timingToggleKnob,
+                    styles.timingToggleKnobActive,
+                    { backgroundColor: colors.black },
+                  ]}
+                />
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* Free user notification timing (locked) */}
+        {preferences.enabled && !user?.isPremium && (
+          <View style={[styles.notificationSettings, { backgroundColor: colors.surfaceLight }]}>
+            <Text style={[styles.notificationLabel, { color: colors.textSecondary }]}>
+              REMINDER TIMING
+            </Text>
+            <Text style={[styles.notificationFreeHint, { color: colors.textTertiary }]}>
+              Free: Day-of reminders only
+            </Text>
+          </View>
+        )}
         <View style={styles.cardSep} />
         <Pressable style={styles.cardRow} onPress={handleExport}>
           <Text style={styles.cardRowValue}>Export data</Text>
@@ -601,6 +703,57 @@ const createStyles = (colors: any) => StyleSheet.create({
   comingSoon: {
     color: colors.textTertiary,
     fontSize: FONT_SIZES.caption,
+  },
+  cardRowSecondary: {
+    fontSize: FONT_SIZES.body,
+    fontFamily: FONTS.light,
+  },
+  notificationSettings: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    marginHorizontal: SPACING.lg,
+    marginTop: SPACING.sm,
+    borderRadius: BORDER_RADIUS.sharp,
+  },
+  notificationLabel: {
+    fontSize: FONT_SIZES.caption,
+    fontFamily: FONTS.regular,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: SPACING.sm,
+  },
+  notificationFreeHint: {
+    fontSize: FONT_SIZES.bodySmall,
+    fontFamily: FONTS.light,
+    marginTop: SPACING.xs,
+  },
+  timingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: SPACING.sm,
+  },
+  timingText: {
+    fontSize: FONT_SIZES.body,
+    fontFamily: FONTS.light,
+  },
+  timingToggle: {
+    width: 44,
+    height: 24,
+    borderRadius: 12,
+    padding: 2,
+    justifyContent: 'center',
+  },
+  timingToggleActive: {
+    justifyContent: 'flex-end',
+  },
+  timingToggleKnob: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+  },
+  timingToggleKnobActive: {
+    alignSelf: 'flex-end',
   },
   premiumBadge: {
     borderWidth: 1,
